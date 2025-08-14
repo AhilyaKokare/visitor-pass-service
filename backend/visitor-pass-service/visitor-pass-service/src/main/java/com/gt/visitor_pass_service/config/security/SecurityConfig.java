@@ -28,11 +28,11 @@ public class SecurityConfig {
     public SecurityConfig(CustomUserDetailsService customUserDetailsService,
                           JwtAuthenticationEntryPoint unauthorizedHandler,
                           JwtAuthenticationFilter jwtAuthenticationFilter,
-                          InternalApiAuthenticationFilter internalApiAuthenticationFilter) { // Add this
+                          InternalApiAuthenticationFilter internalApiAuthenticationFilter) {
         this.customUserDetailsService = customUserDetailsService;
         this.unauthorizedHandler = unauthorizedHandler;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
-        this.internalApiAuthenticationFilter = internalApiAuthenticationFilter; // Add this
+        this.internalApiAuthenticationFilter = internalApiAuthenticationFilter;
     }
 
     @Bean
@@ -48,19 +48,29 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                // This is the ONLY cors() configuration you should have.
+                // It enables the global CORS policy defined in your WebConfig class.
                 .cors(Customizer.withDefaults())
-                .csrf(csrf -> csrf.disable())
-                .cors(cors -> cors.disable())
-                .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/internal/**").hasRole("INTERNAL_SERVICE") // Secure internal path
-                        .anyRequest().authenticated()
 
+                // Disable CSRF protection for stateless REST APIs.
+                .csrf(csrf -> csrf.disable())
+
+                // VVV THE CONFLICTING LINE HAS BEEN REMOVED FROM HERE VVV
+
+                // Set up custom entry point for authentication errors.
+                .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
+
+                // Configure session management to be stateless, as we are using JWTs.
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+                // Define authorization rules for your endpoints.
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/auth/**").permitAll() // Allow public access to login/register
+                        .requestMatchers("/api/internal/**").hasRole("INTERNAL_SERVICE") // Secure internal paths
+                        .anyRequest().authenticated() // All other requests require authentication
                 );
 
-        // Add both filters
+        // Add your custom JWT and internal API filters to the security chain.
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(internalApiAuthenticationFilter, JwtAuthenticationFilter.class);
 
