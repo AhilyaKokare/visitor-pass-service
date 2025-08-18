@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import com.gt.visitor_pass_service.dto.UserCreatedEvent;
+import com.gt.visitor_pass_service.config.RabbitMQConfig;
 
 import java.time.LocalDateTime;
 import java.util.List;
