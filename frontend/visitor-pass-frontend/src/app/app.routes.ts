@@ -35,6 +35,16 @@ export const routes: Routes = [
       { path: 'tenant-admin/users', component: UserListComponent, canActivate: [roleGuard], data: { expectedRoles: ['ROLE_TENANT_ADMIN'] } },
       { path: 'tenant-admin/users/create', component: UserCreateComponent, canActivate: [roleGuard], data: { expectedRoles: ['ROLE_TENANT_ADMIN'] } },
 
+      {
+        path: 'tenant-admin/dashboard',
+        component: UserListComponent, // <-- This should be the main view
+        canActivate: [roleGuard], data: { expectedRoles: ['ROLE_TENANT_ADMIN'] }
+      },
+       {
+        path: 'tenant-admin/users',
+        component: UserListComponent, // This is the explicit route for user management
+        canActivate: [roleGuard], data: { expectedRoles: ['ROLE_TENANT_ADMIN'] }
+      },
       // Employee
       { path: 'passes/create', component: CreatePassComponent, canActivate: [roleGuard], data: { expectedRoles: ['ROLE_EMPLOYEE', 'ROLE_TENANT_ADMIN'] } },
       { path: 'passes/history', component: MyPassHistoryComponent, canActivate: [roleGuard], data: { expectedRoles: ['ROLE_EMPLOYEE', 'ROLE_TENANT_ADMIN'] } },
