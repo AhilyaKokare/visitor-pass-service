@@ -18,6 +18,7 @@ export class UserService {
     return this.http.get<User[]>(`${this.getApiUrl(tenantId)}/users`);
   }
 
+  // THIS IS THE METHOD WE WILL BE USING
   createUser(tenantId: number, userData: any): Observable<User> {
     return this.http.post<User>(`${this.getApiUrl(tenantId)}/users`, userData);
   }
