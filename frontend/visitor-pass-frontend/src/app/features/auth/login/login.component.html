@@ -1,0 +1,22 @@
+<div class="login-wrapper">
+  <div class="login-container">
+    <h2 class="text-center mb-4">Visitor Pass System</h2>
+    <form (ngSubmit)="onLogin()" #loginForm="ngForm">
+      <div class="mb-3">
+        <label for="username" class="form-label">Email address</label>
+        <input type="email" class="form-control" id="username" name="username" [(ngModel)]="credentials.username" required>
+      </div>
+      <div class="mb-3">
+        <label for="password" class="form-label">Password</label>
+        <input type="password" class="form-control" id="password" name="password" [(ngModel)]="credentials.password" required>
+      </div>
+      <button type="submit" class="btn btn-primary w-100" [disabled]="!loginForm.valid || isSubmitting">
+        <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+        {{ isSubmitting ? 'Logging In...' : 'Login' }}
+      </button>
+      <div *ngIf="errorMessage" class="alert alert-danger mt-3">
+        {{ errorMessage }}
+      </div>
+    </form>
+  </div>
+</div>

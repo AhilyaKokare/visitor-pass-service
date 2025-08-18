@@ -1,0 +1,46 @@
+<nav id="sidebar" class="d-flex flex-column bg-dark text-white p-3">
+  <div class="sidebar-header mb-4 text-center">
+    <h4>Navigation Menu</h4>
+  </div>
+
+  <ul class="nav nav-pills flex-column mb-auto" *ngIf="currentUser$ | async as user">
+    <!-- Super Admin Links -->
+    <li class="nav-item" *ngIf="user.role === 'ROLE_SUPER_ADMIN'">
+      <a class="nav-link text-white" routerLink="/super-admin/dashboard" routerLinkActive="active">Tenant Management</a>
+    </li>
+
+    <!-- Tenant Admin Links -->
+    <ng-container *ngIf="user.role === 'ROLE_TENANT_ADMIN'">
+       <li><a class="nav-link text-white" routerLink="/tenant-admin/users" routerLinkActive="active">Manage Users</a></li>
+    </ng-container>
+
+    <!-- Employee Links -->
+    <ng-container *ngIf="user.role === 'ROLE_EMPLOYEE' || user.role === 'ROLE_TENANT_ADMIN'">
+      <li><a class="nav-link text-white" routerLink="/passes/create" routerLinkActive="active">Create Pass</a></li>
+      <li><a class="nav-link text-white" routerLink="/passes/history" routerLinkActive="active">Pass History</a></li>
+    </ng-container>
+
+    <!-- Approver Links -->
+    <ng-container *ngIf="user.role === 'ROLE_APPROVER' || user.role === 'ROLE_TENANT_ADMIN'">
+       <li><a class="nav-link text-white" routerLink="/passes/approve" routerLinkActive="active">Approval Queue</a></li>
+    </ng-container>
+
+    <!-- Security Links -->
+    <ng-container *ngIf="user.role === 'ROLE_SECURITY' || user.role === 'ROLE_TENANT_ADMIN'">
+       <li><a class="nav-link text-white" routerLink="/security/dashboard" routerLinkActive="active">Security Dashboard</a></li>
+    </ng-container>
+  </ul>
+
+  <hr>
+  <div class="dropdown" *ngIf="currentUser$ | async as user">
+    <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+      <strong>{{ user.sub }}</strong>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
+      <li><a class="dropdown-item" routerLink="/profile">My Profile</a></li>
+      <li><hr class="dropdown-divider"></li>
+      <!-- VVV THIS IS THE NEWLY ADDED LOGOUT BUTTON VVV -->
+      <li><a class="dropdown-item" (click)="logout()" style="cursor: pointer;">Logout</a></li>
+    </ul>
+  </div>
+</nav>

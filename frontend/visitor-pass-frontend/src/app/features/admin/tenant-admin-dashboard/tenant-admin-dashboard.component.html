@@ -1,0 +1,95 @@
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<div class="container mt-4">
+  <h3>Tenant Admin Dashboard</h3>
+  <p>Manage users for your location.</p>
+
+  <!-- Button to trigger the modal -->
+  <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#createUserModal">
+    Create New User
+  </button>
+
+  <hr>
+
+  <h4>Existing Users</h4>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Unique ID</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Role</th>
+        <th>Department</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let user of users">
+        <td>{{ user.uniqueId }}</td>
+        <td>{{ user.name }}</td>
+        <td>{{ user.email }}</td>
+        <td>{{ user.role }}</td>
+        <td>{{ user.department }}</td>
+        <td>
+          <span class="badge" [ngClass]="user.isActive ? 'bg-success' : 'bg-secondary'">
+            {{ user.isActive ? 'Active' : 'Inactive' }}
+          </span>
+        </td>
+        <td>
+          <button class="btn btn-sm" [ngClass]="user.isActive ? 'btn-warning' : 'btn-success'" (click)="toggleUserStatus(user)">
+            {{ user.isActive ? 'Deactivate' : 'Activate' }}
+          </button>
+        </td>
+      </tr>
+      <tr *ngIf="users.length === 0">
+        <td colspan="7" class="text-center">No users found.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Create User Modal -->
+<div class="modal fade" id="createUserModal" tabindex="-1" aria-labelledby="createUserModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="createUserModalLabel">Create New User</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" #closeModalButton></button>
+      </div>
+      <div class="modal-body">
+        <form (ngSubmit)="onCreateUser()" #userForm="ngForm">
+          <div class="mb-3">
+            <label class="form-label">Name</label>
+            <input type="text" class="form-control" name="name" [(ngModel)]="newUser.name" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-control" name="email" [(ngModel)]="newUser.email" required>
+          </div>
+           <div class="mb-3">
+            <label class="form-label">Password</label>
+            <input type="password" class="form-control" name="password" [(ngModel)]="newUser.password" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Role</label>
+            <select class="form-select" name="role" [(ngModel)]="newUser.role" required>
+              <option value="ROLE_EMPLOYEE">Employee</option>
+              <option value="ROLE_APPROVER">Approver</option>
+              <option value="ROLE_SECURITY">Security</option>
+            </select>
+          </div>
+           <div class="mb-3">
+            <label class="form-label">Department</label>
+            <input type="text" class="form-control" name="department" [(ngModel)]="newUser.department">
+          </div>
+           <div class="mb-3">
+            <label class="form-label">Joining Date</label>
+            <input type="date" class="form-control" name="joiningDate" [(ngModel)]="newUser.joiningDate" required>
+          </div>
+          <button type="submit" class="btn btn-primary" [disabled]="!userForm.valid">Create User</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

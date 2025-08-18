@@ -1,0 +1,33 @@
+<div class="container mt-4">
+  <div class="card">
+    <div class="card-header">
+      <h4>Create New Visitor Pass</h4>
+    </div>
+    <div class="card-body">
+      <form (ngSubmit)="onCreatePass()" #passForm="ngForm">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Visitor's Full Name</label>
+            <input type="text" class="form-control" name="visitorName" [(ngModel)]="passData.visitorName" required>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Visitor's Company</label>
+            <input type="text" class="form-control" name="visitorCompany" [(ngModel)]="passData.visitorCompany">
+          </div>
+          <div class="col-12 mb-3">
+            <label class="form-label">Purpose of Visit</label>
+            <textarea class="form-control" name="purpose" [(ngModel)]="passData.purpose" required></textarea>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Date and Time of Visit</label>
+            <input type="datetime-local" class="form-control" name="visitDateTime" [(ngModel)]="passData.visitDateTime" required>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary" [disabled]="!passForm.valid || isSubmitting">
+          <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+          {{ isSubmitting ? 'Submitting...' : 'Submit Request' }}
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
