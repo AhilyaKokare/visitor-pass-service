@@ -10,6 +10,8 @@ import com.gt.visitor_pass_service.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import com.gt.visitor_pass_service.dto.UserCreatedEvent;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,13 +26,15 @@ public class UserService { // Renamed from AdminService
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuditService auditService;
+    private final RabbitTemplate rabbitTemplate;
 
 
-    public UserService(TenantRepository tenantRepository, UserRepository userRepository, PasswordEncoder passwordEncoder, AuditService auditService) {
+    public UserService(TenantRepository tenantRepository, UserRepository userRepository, PasswordEncoder passwordEncoder, AuditService auditService, RabbitTemplate rabbitTemplate) {
         this.tenantRepository = tenantRepository;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.auditService = auditService;
+        this.rabbitTemplate = rabbitTemplate;
     }
 
     @Transactional
@@ -119,6 +123,17 @@ public class UserService { // Renamed from AdminService
 
         User savedUser = userRepository.save(user);
         auditService.logEvent("USER_CREATED", savedUser.getId(), tenantId, null);
+
+        UserCreatedEvent event = new UserCreatedEvent(
+                savedUser.getName(),
+                savedUser.getEmail(),
+                savedUser.getRole(),
+                tenant.getName(),
+                "http://localhost:4200/login" // Your frontend login URL
+        );
+
+        rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE_NAME, RabbitMQConfig.ROUTING_KEY_USER_CREATED, event);
+
         return mapToUserResponse(savedUser);
     }
 

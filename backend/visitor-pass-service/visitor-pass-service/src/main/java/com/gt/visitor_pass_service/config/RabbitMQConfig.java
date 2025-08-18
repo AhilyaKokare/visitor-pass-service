@@ -21,6 +21,8 @@ public class RabbitMQConfig {
     public static final String ROUTING_KEY_REJECTED = "pass.event.rejected";
     public static final String QUEUE_EXPIRED_NAME = "pass.expired.queue";
     public static final String ROUTING_KEY_EXPIRED = "pass.event.expired";
+    public static final String QUEUE_USER_CREATED_NAME = "user.created.queue";
+    public static final String ROUTING_KEY_USER_CREATED = "user.event.created";
 
     @Bean
     public RabbitAdmin rabbitAdmin(ConnectionFactory connectionFactory) {
@@ -70,5 +72,15 @@ public class RabbitMQConfig {
     @Bean
     public MessageConverter jsonMessageConverter() {
         return new Jackson2JsonMessageConverter();
+    }
+
+    @Bean
+    public Queue userCreatedQueue() {
+        return new Queue(QUEUE_USER_CREATED_NAME, true);
+    }
+
+    @Bean
+    public Binding userCreatedBinding(Queue userCreatedQueue, TopicExchange exchange) {
+        return BindingBuilder.bind(userCreatedQueue).to(exchange).with(ROUTING_KEY_USER_CREATED);
     }
 }
