@@ -13,6 +13,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import com.gt.visitor_pass_service.dto.UserCreatedEvent;
 import com.gt.visitor_pass_service.config.RabbitMQConfig;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -140,11 +143,11 @@ public class UserService { // Renamed from AdminService
         return mapToUserResponse(savedUser);
     }
 
-    public List<UserResponse> getUsersByTenant(Long tenantId) {
-        return userRepository.findAll().stream()
-                .filter(user -> user.getTenant() != null && user.getTenant().getId().equals(tenantId))
-                .map(this::mapToUserResponse)
-                .collect(Collectors.toList());
+    public Page<UserResponse> getUsersByTenant(Long tenantId, Pageable pageable) {
+        Page<User> userPage = userRepository.findByTenantId(tenantId, pageable);
+        // The .map() function on a Page object automatically converts the content
+        // while preserving the pagination metadata.
+        return userPage.map(this::mapToUserResponse);
     }
 
     public UserResponse updateUserStatus(Long userId, Long tenantId, boolean isActive) {

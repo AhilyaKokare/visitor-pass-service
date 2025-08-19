@@ -15,6 +15,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 
 import java.util.List;
 
@@ -44,10 +47,15 @@ public class TenantAdminController {
 
     @GetMapping("/users")
     @PreAuthorize("hasRole('TENANT_ADMIN')")
-    @Operation(summary = "Get All Users in Tenant", description = "Retrieves a list of all users within the Tenant Admin's assigned location.")
-    public ResponseEntity<List<UserResponse>> getUsersInTenant(@Parameter(description = "ID of the tenant to manage") @PathVariable Long tenantId, HttpServletRequest servletRequest) {
+    @Operation(summary = "Get All Users in Tenant (Paginated)",
+            description = "Retrieves a paginated list of all users within the Tenant Admin's assigned location. " +
+                    "Supports sorting and pagination via query parameters (e.g., ?page=0&size=10&sort=name,asc)")
+    public ResponseEntity<Page<UserResponse>> getUsersInTenant(
+            @Parameter(description = "ID of the tenant to manage") @PathVariable Long tenantId,
+            @PageableDefault(size = 10, sort = "name") Pageable pageable, // <-- ADD THIS
+            HttpServletRequest servletRequest) {
         tenantSecurityService.checkTenantAccess(servletRequest.getHeader("Authorization"), tenantId);
-        List<UserResponse> users = userService.getUsersByTenant(tenantId);
+        Page<UserResponse> users = userService.getUsersByTenant(tenantId, pageable);
         return ResponseEntity.ok(users);
     }
 
