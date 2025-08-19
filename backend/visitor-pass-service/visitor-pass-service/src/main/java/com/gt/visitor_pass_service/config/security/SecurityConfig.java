@@ -24,6 +24,15 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final InternalApiAuthenticationFilter internalApiAuthenticationFilter;
 
+    // Define the public Swagger paths
+    private static final String[] SWAGGER_WHITELIST = {
+            "/swagger-ui.html",
+            "/swagger-ui/**",
+            "/v3/api-docs/**",
+            "/swagger-resources/**",
+            "/webjars/**"
+    };
+
     public SecurityConfig(
             JwtAuthenticationEntryPoint unauthorizedHandler,
             JwtAuthenticationFilter jwtAuthenticationFilter,
@@ -60,6 +69,7 @@ public class SecurityConfig {
 
                 // 5. Define authorization rules for your endpoints
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(SWAGGER_WHITELIST).permitAll() // Allow public access to Swagger UI
                         // IMPORTANT: Allow all OPTIONS pre-flight requests
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // Your existing rules
