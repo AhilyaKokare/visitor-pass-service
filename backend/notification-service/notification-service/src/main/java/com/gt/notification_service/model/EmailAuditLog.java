@@ -16,9 +16,12 @@ public class EmailAuditLog {
     private String recipientAddress;
     private String subject;
     @Lob
+    @Column(columnDefinition = "TEXT")
     private String body;
     @Enumerated(EnumType.STRING)
     private EmailStatus status;
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String failureReason;
     private LocalDateTime createdAt;
     private LocalDateTime processedAt;
