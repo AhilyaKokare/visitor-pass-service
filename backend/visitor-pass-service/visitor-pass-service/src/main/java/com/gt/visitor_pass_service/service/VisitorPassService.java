@@ -9,6 +9,8 @@ import com.gt.visitor_pass_service.repository.UserRepository;
 import com.gt.visitor_pass_service.repository.VisitorPassRepository;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -158,11 +160,9 @@ public class VisitorPassService {
         return mapToResponse(pass);
     }
     // Get all passes for a specific tenant
-    public List<VisitorPassResponse> getPassesByTenant(Long tenantId) {
-        return passRepository.findByTenantId(tenantId)
-                .stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
+    public Page<VisitorPassResponse> getPassesByTenant(Long tenantId, Pageable pageable) {
+        Page<VisitorPass> passPage = passRepository.findByTenantId(tenantId, pageable); // <-- This is the correct call
+        return passPage.map(this::mapToResponse);
     }
 
     public VisitorPassResponse getPassById(Long passId) {
@@ -171,13 +171,12 @@ public class VisitorPassService {
         return mapToResponse(pass);
     }
 
-    public List<VisitorPassResponse> getPassHistoryForUser(String userEmail) {
+    public Page<VisitorPassResponse> getPassHistoryForUser(String userEmail, Pageable pageable) {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "email", userEmail));
-        return passRepository.findByCreatedById(user.getId())
-                .stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
+
+        Page<VisitorPass> passPage = passRepository.findByCreatedById(user.getId(), pageable);
+        return passPage.map(this::mapToResponse);
     }
 
     public List<SecurityDashboardResponse> getTodaysVisitors(Long tenantId) {

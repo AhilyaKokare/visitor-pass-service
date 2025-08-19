@@ -16,6 +16,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
 
@@ -53,14 +57,26 @@ public class EmployeeController {
 
     @GetMapping("/history")
     @PreAuthorize("hasAnyRole('EMPLOYEE', 'TENANT_ADMIN')")
-    @Operation(summary = "Get Personal Pass History", description = "Retrieves a list of all visitor passes created by the currently authenticated user.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully retrieved pass history"),
-            @ApiResponse(responseCode = "403", description = "Forbidden")
-    })
-    public ResponseEntity<List<VisitorPassResponse>> getMyPassHistory(Authentication authentication) {
+    @Operation(summary = "Get Personal Pass History (Paginated)",
+            description = "Retrieves a paginated list of all visitor passes created by the currently authenticated user.")
+    public ResponseEntity<Page<VisitorPassResponse>> getMyPassHistory(
+            Authentication authentication,
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) { // <-- ADD Pageable
         String userEmail = authentication.getName();
-        List<VisitorPassResponse> history = visitorPassService.getPassHistoryForUser(userEmail);
+        Page<VisitorPassResponse> history = visitorPassService.getPassHistoryForUser(userEmail, pageable);
         return ResponseEntity.ok(history);
+    }
+
+    @GetMapping
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'APPROVER', 'SECURITY', 'TENANT_ADMIN')")
+    @Operation(summary = "Get All Passes in Tenant (Paginated)",
+            description = "Retrieves a paginated list of all passes within a tenant. Intended for admins, approvers, or security.")
+    public ResponseEntity<Page<VisitorPassResponse>> getPassesForTenant(
+            @Parameter(description = "ID of the tenant") @PathVariable Long tenantId,
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
+            HttpServletRequest servletRequest) {
+        tenantSecurityService.checkTenantAccess(servletRequest.getHeader("Authorization"), tenantId);
+        Page<VisitorPassResponse> passes = visitorPassService.getPassesByTenant(tenantId, pageable);
+        return ResponseEntity.ok(passes);
     }
 }
