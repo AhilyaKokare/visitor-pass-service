@@ -135,6 +135,8 @@ public class UserService { // Renamed from AdminService
 
         rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE_NAME, RabbitMQConfig.ROUTING_KEY_USER_CREATED, event);
 
+        System.out.println(">>> UserCreatedEvent sent for user: " + savedUser.getEmail());
+
         return mapToUserResponse(savedUser);
     }
 

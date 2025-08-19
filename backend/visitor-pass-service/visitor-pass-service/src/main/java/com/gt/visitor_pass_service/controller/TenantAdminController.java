@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import com.gt.visitor_pass_service.dto.TenantDashboardResponse; // Add import
 import com.gt.visitor_pass_service.service.DashboardService;
@@ -33,7 +34,7 @@ public class TenantAdminController {
 
     @PostMapping("/users")
     @PreAuthorize("hasRole('TENANT_ADMIN')")
-    public ResponseEntity<UserResponse> createUser(@PathVariable Long tenantId, @RequestBody CreateUserRequest request, HttpServletRequest servletRequest) {
+    public ResponseEntity<UserResponse> createUser(@PathVariable Long tenantId, @Valid @RequestBody CreateUserRequest request, HttpServletRequest servletRequest) {
         tenantSecurityService.checkTenantAccess(servletRequest.getHeader("Authorization"), tenantId);
         UserResponse response = userService.createUser(tenantId, request);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
