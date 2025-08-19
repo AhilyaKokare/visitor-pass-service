@@ -1,46 +1,44 @@
 package com.gt.visitor_pass_service.controller;
 
-import com.gt.visitor_pass_service.config.security.JwtTokenProvider;
 import com.gt.visitor_pass_service.dto.JwtAuthenticationResponse;
 import com.gt.visitor_pass_service.dto.LoginRequest;
-import com.gt.visitor_pass_service.model.User;
-import com.gt.visitor_pass_service.repository.UserRepository;
+import com.gt.visitor_pass_service.service.AuthService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
-
-// DTOs for LoginRequest and JwtAuthenticationResponse would be needed here
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/auth")
+@Tag(name = "0. Authentication", description = "API for user login to obtain a JWT.")
 public class AuthController {
 
-    private final AuthenticationManager authenticationManager;
-    private final JwtTokenProvider tokenProvider;
-    private final UserRepository userRepository;
+    // VVV INJECT AuthService INSTEAD OF THE OTHER COMPONENTS VVV
+    private final AuthService authService;
 
-    public AuthController(AuthenticationManager authenticationManager, JwtTokenProvider tokenProvider, UserRepository userRepository) {
-        this.authenticationManager = authenticationManager;
-        this.tokenProvider = tokenProvider;
-        this.userRepository = userRepository;
+    public AuthController(AuthService authService) {
+        this.authService = authService;
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        loginRequest.getUsername(),
-                        loginRequest.getPassword()
-                )
-        );
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        User user = userRepository.findByEmail(loginRequest.getUsername()).get();
-        String jwt = tokenProvider.generateToken(authentication, user);
+    @Operation(summary = "Authenticate User", description = "Authenticates a user with email and password, returning a JWT if successful.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Authentication successful",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = JwtAuthenticationResponse.class)) }),
+            @ApiResponse(responseCode = "401", description = "Invalid credentials", content = @Content)
+    })
+    public ResponseEntity<JwtAuthenticationResponse> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+        // VVV THE LOGIC IS NOW A SIMPLE, SINGLE CALL TO THE SERVICE VVV
+        String jwt = authService.loginAndGetToken(loginRequest);
         return ResponseEntity.ok(new JwtAuthenticationResponse(jwt));
     }
 }
