@@ -53,7 +53,6 @@ public class SuperAdminDashboardService {
     }
 
     private List<TenantActivityDTO> buildTenantActivity() {
-        // Fetch all tenants except the system's global one
         List<Tenant> tenants = tenantRepository.findAll().stream()
                 .filter(tenant -> !"Global Administration".equals(tenant.getName()))
                 .collect(Collectors.toList());
@@ -62,6 +61,7 @@ public class SuperAdminDashboardService {
                 .map(tenant -> TenantActivityDTO.builder()
                         .tenantId(tenant.getId())
                         .tenantName(tenant.getName())
+                        .locationDetails(tenant.getLocationDetails()) // <-- ADD THIS LINE
                         .userCount(userRepository.countByTenantId(tenant.getId()))
                         .passesToday(passRepository.countPassesForTenantToday(tenant.getId()))
                         .totalPassesAllTime(passRepository.countByTenantId(tenant.getId()))
