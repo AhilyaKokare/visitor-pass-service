@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 public class TenantActivityDTO {
     private Long tenantId;
     private String tenantName;
+    private String locationDetails;
     private long userCount;
     private long passesToday;
     private long totalPassesAllTime;
