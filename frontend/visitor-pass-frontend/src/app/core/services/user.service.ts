@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { User } from '../models/user.model';
+import { Page } from '../../shared/pagination/pagination.component';
 
 @Injectable({
   providedIn: 'root'
@@ -14,8 +15,11 @@ export class UserService {
 
   constructor(private http: HttpClient) { }
 
-  getUsers(tenantId: number): Observable<User[]> {
-    return this.http.get<User[]>(`${this.getApiUrl(tenantId)}/users`);
+  getUsers(tenantId: number, page: number, size: number): Observable<Page<User>> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+    return this.http.get<Page<User>>(`${this.getApiUrl(tenantId)}/users`, { params });
   }
 
   // THIS IS THE METHOD WE WILL BE USING

@@ -1,16 +1,72 @@
+/*
+* THE DEFINITIVE BOOTSTRAP CUSTOMIZATION METHOD
+* This file uses the classic @import rule which is more robust for complex libraries.
+*/
+
+// Step 1: Define ALL your variable overrides FIRST.
+// This is the most important rule. You must define your custom
+// variables before Bootstrap's default variables are imported.
+$primary: #003366; // Set a new primary color for buttons, links, etc.
+$secondary: #6c757d;
+$success: #198754;
+
+// Create a custom color map for our theme
+$custom-colors: (
+  "primary-dark": #003366,
+  "primary-light": #e6f0ff
+);
+
+// Step 2: Import Bootstrap's default functions so we can use them.
+@import "bootstrap/scss/functions";
+
+// Step 3: Import Bootstrap's default variables.
+@import "bootstrap/scss/variables";
+
+// Step 4: MERGE your custom color map into Bootstrap's theme-colors map.
+// This adds your new colors (like "primary-dark") to the theme.
+$theme-colors: map-merge($theme-colors, $custom-colors);
+
+// Step 5: Import the entire Bootstrap library.
+// This will now use your overridden variables and merged theme-colors map.
+@import "bootstrap/scss/bootstrap";
+
+
+// --- Your Custom Global Styles Can Go Below ---
+
 body {
-  background-color: #f8f9fa; /* A slightly off-white for a softer look */
-  min-width: 320px;
+  background-color: #f8f9fa;
 }
 
 #content {
   width: 100%;
-  padding: 20px;
+  padding: 1rem 2rem;
   min-height: 100vh;
-  transition: all 0.3s;
 }
 
 .card {
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-  border: 1px solid #e9ecef;
+  border: 0;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08);
+}
+
+.table-hover tbody tr:hover {
+  background-color: rgba($primary, 0.05);
+}
+
+// Custom styles for the dashboard cards
+.card.border-start {
+    border-width: 0 0 0 0.25rem !important;
+}
+.border-start-primary { border-left-color: $primary !important; }
+.border-start-info { border-left-color: $info !important; }
+.border-start-success { border-left-color: $success !important; }
+.border-start-warning { border-left-color: $warning !important; }
+
+.text-xs {
+    font-size: 0.8rem;
+}
+.fw-bold {
+    font-weight: 700 !important;
+}
+.text-gray-800 {
+    color: #5a5c69;
 }

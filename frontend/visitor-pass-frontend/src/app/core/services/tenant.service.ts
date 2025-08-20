@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { TenantDashboardInfo } from '../models/tenant.model';
+import { TenantDashboardInfo, SuperAdminDashboard } from '../models/tenant.model';
 
 @Injectable({
   providedIn: 'root'
@@ -12,8 +12,8 @@ export class TenantService {
 
   constructor(private http: HttpClient) { }
 
-  getTenants(): Observable<TenantDashboardInfo[]> {
-    return this.http.get<TenantDashboardInfo[]>(`${this.apiUrl}/dashboard/tenants`);
+  getSuperAdminDashboard(): Observable<SuperAdminDashboard> {
+    return this.http.get<SuperAdminDashboard>(`${this.apiUrl}/dashboard`);
   }
 
   createTenantAndAdmin(data: any): Observable<any> {
