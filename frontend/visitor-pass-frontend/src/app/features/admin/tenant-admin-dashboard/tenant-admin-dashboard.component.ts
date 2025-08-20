@@ -1,26 +1,24 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
 import { ToastrService } from 'ngx-toastr';
-import { UserService } from '../../../core/services/user.service';
 import { AuthService } from '../../../core/services/auth.service';
-import { User } from '../../../core/models/user.model';
+import { DashboardService } from '../../../core/services/dashboard.service';
+import { TenantDashboardResponse } from '../../../core/models/dashboard.model';
+import { LoadingSpinnerComponent } from '../../../shared/loading-spinner/loading-spinner.component';
 
 @Component({
   selector: 'app-tenant-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule],
-    templateUrl: './tenant-admin-dashboard.component.html',
+  imports: [CommonModule, DatePipe, LoadingSpinnerComponent],
+  templateUrl: './tenant-admin-dashboard.component.html',
 })
 export class TenantAdminDashboardComponent implements OnInit {
-  @ViewChild('closeModalButton') closeModalButton!: ElementRef;
-
-  users: User[] = [];
+  dashboardData: TenantDashboardResponse | null = null;
   tenantId!: number;
-  newUser: any = { role: 'ROLE_EMPLOYEE' };
+  isLoading = true;
 
   constructor(
-    private userService: UserService,
+    private dashboardService: DashboardService,
     private authService: AuthService,
     private toastr: ToastrService
   ) {}
@@ -29,35 +27,24 @@ export class TenantAdminDashboardComponent implements OnInit {
     const user = this.authService.getDecodedToken();
     if (user && user.tenantId) {
       this.tenantId = user.tenantId;
-      this.loadUsers();
+      this.loadDashboard();
+    } else {
+      this.toastr.error('Could not determine tenant to load dashboard.');
+      this.isLoading = false;
     }
   }
 
-  loadUsers(): void {
-    this.userService.getUsers(this.tenantId).subscribe(data => {
-      this.users = data;
-    });
-  }
-
-  onCreateUser(): void {
-    this.userService.createUser(this.tenantId, this.newUser).subscribe({
-      next: () => {
-        this.toastr.success('User created successfully!');
-        this.loadUsers();
-        this.closeModalButton.nativeElement.click(); // Close the modal
-        this.newUser = { role: 'ROLE_EMPLOYEE' }; // Reset form
+  loadDashboard(): void {
+    this.isLoading = true;
+    this.dashboardService.getTenantDashboardData(this.tenantId).subscribe({
+      next: (data) => {
+        this.dashboardData = data;
+        this.isLoading = false;
       },
-      error: (err) => this.toastr.error(err.error.message || 'Failed to create user.')
-    });
-  }
-
-  toggleUserStatus(user: User): void {
-    this.userService.updateUserStatus(this.tenantId, user.id, !user.isActive).subscribe({
-      next: () => {
-        this.toastr.success(`User status updated to ${!user.isActive ? 'Active' : 'Inactive'}.`);
-        this.loadUsers();
+      error: () => {
+        this.toastr.error('Failed to load tenant dashboard.');
+        this.isLoading = false;
       },
-      error: (err) => this.toastr.error('Failed to update user status.')
     });
   }
 }

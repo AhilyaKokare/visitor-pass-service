@@ -1,0 +1,24 @@
+.card.border-left-primary {
+  border-left: 0.25rem solid var(--bs-primary);
+}
+.card.border-left-success {
+  border-left: 0.25rem solid var(--bs-success);
+}
+.card.border-left-info {
+  border-left: 0.25rem solid var(--bs-info);
+}
+.card.border-left-warning {
+  border-left: 0.25rem solid var(--bs-warning);
+}
+.text-gray-300 {
+  color: #dddfeb;
+}
+.text-gray-800 {
+    color: #5a5c69;
+}
+.text-xs {
+    font-size: 0.7rem;
+}
+.font-weight-bold {
+    font-weight: 700;
+}

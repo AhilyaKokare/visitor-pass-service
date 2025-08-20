@@ -1,95 +1,67 @@
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
 <div class="container mt-4">
   <h3>Tenant Admin Dashboard</h3>
-  <p>Manage users for your location.</p>
-
-  <!-- Button to trigger the modal -->
-  <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#createUserModal">
-    Create New User
-  </button>
-
-  <hr>
-
-  <h4>Existing Users</h4>
-  <table class="table table-striped">
-    <thead>
-      <tr>
-        <th>Unique ID</th>
-        <th>Name</th>
-        <th>Email</th>
-        <th>Role</th>
-        <th>Department</th>
-        <th>Status</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let user of users">
-        <td>{{ user.uniqueId }}</td>
-        <td>{{ user.name }}</td>
-        <td>{{ user.email }}</td>
-        <td>{{ user.role }}</td>
-        <td>{{ user.department }}</td>
-        <td>
-          <span class="badge" [ngClass]="user.isActive ? 'bg-success' : 'bg-secondary'">
-            {{ user.isActive ? 'Active' : 'Inactive' }}
-          </span>
-        </td>
-        <td>
-          <button class="btn btn-sm" [ngClass]="user.isActive ? 'btn-warning' : 'btn-success'" (click)="toggleUserStatus(user)">
-            {{ user.isActive ? 'Deactivate' : 'Activate' }}
-          </button>
-        </td>
-      </tr>
-      <tr *ngIf="users.length === 0">
-        <td colspan="7" class="text-center">No users found.</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
-
-<!-- Create User Modal -->
-<div class="modal fade" id="createUserModal" tabindex="-1" aria-labelledby="createUserModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="createUserModalLabel">Create New User</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" #closeModalButton></button>
+  <div *ngIf="!isLoading && dashboardData; else loadingTemplate">
+    <!-- Stats Cards for the Tenant -->
+    <div class="row mb-4">
+       <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card text-white bg-primary h-100">
+          <div class="card-body">
+            <h5 class="card-title">{{ dashboardData.stats.pendingPasses }}</h5>
+            <p class="card-text">Pending Passes</p>
+          </div>
+        </div>
       </div>
-      <div class="modal-body">
-        <form (ngSubmit)="onCreateUser()" #userForm="ngForm">
-          <div class="mb-3">
-            <label class="form-label">Name</label>
-            <input type="text" class="form-control" name="name" [(ngModel)]="newUser.name" required>
+      <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card text-white bg-warning h-100">
+          <div class="card-body">
+            <h5 class="card-title">{{ dashboardData.stats.approvedPassesToday }}</h5>
+            <p class="card-text">Approved Today</p>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Email</label>
-            <input type="email" class="form-control" name="email" [(ngModel)]="newUser.email" required>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card text-white bg-info h-100">
+          <div class="card-body">
+            <h5 class="card-title">{{ dashboardData.stats.checkedInVisitors }}</h5>
+            <p class="card-text">Visitors On-Site</p>
           </div>
-           <div class="mb-3">
-            <label class="form-label">Password</label>
-            <input type="password" class="form-control" name="password" [(ngModel)]="newUser.password" required>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card text-white bg-success h-100">
+          <div class="card-body">
+            <h5 class="card-title">{{ dashboardData.stats.completedPassesToday }}</h5>
+            <p class="card-text">Completed Today</p>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Role</label>
-            <select class="form-select" name="role" [(ngModel)]="newUser.role" required>
-              <option value="ROLE_EMPLOYEE">Employee</option>
-              <option value="ROLE_APPROVER">Approver</option>
-              <option value="ROLE_SECURITY">Security</option>
-            </select>
-          </div>
-           <div class="mb-3">
-            <label class="form-label">Department</label>
-            <input type="text" class="form-control" name="department" [(ngModel)]="newUser.department">
-          </div>
-           <div class="mb-3">
-            <label class="form-label">Joining Date</label>
-            <input type="date" class="form-control" name="joiningDate" [(ngModel)]="newUser.joiningDate" required>
-          </div>
-          <button type="submit" class="btn btn-primary" [disabled]="!userForm.valid">Create User</button>
-        </form>
+        </div>
       </div>
     </div>
+
+    <!-- Activity Logs -->
+    <div class="row">
+        <div class="col-md-6">
+            <h4>Recent Pass Activity</h4>
+            <ul class="list-group">
+                <li *ngFor="let activity of dashboardData.recentPassActivity" class="list-group-item">
+                   {{ activity.actionDescription }} on pass #{{activity.passId}} by user #{{activity.userId}}
+                   <br><small class="text-muted">{{ activity.timestamp | date:'medium' }}</small>
+                </li>
+            </ul>
+        </div>
+        <div class="col-md-6">
+            <h4>Recent Email Activity</h4>
+            <ul class="list-group">
+                <li *ngFor="let email of dashboardData.recentEmailActivity" class="list-group-item">
+                   {{ email.subject }}
+                   <br><small class="text-muted">To: {{email.recipientAddress}} | Status: {{email.status}}</small>
+                </li>
+            </ul>
+        </div>
+    </div>
   </div>
+
+  <ng-template #loadingTemplate>
+      <app-loading-spinner></app-loading-spinner>
+      <p class="text-center">Loading Tenant Dashboard...</p>
+  </ng-template>
 </div>
