@@ -23,11 +23,22 @@ export class UserListComponent implements OnInit {
   tenantId!: number;
   isLoading = true;
   isSubmitting = false;
+  showPassword = false;
 
   currentPage = 0;
   pageSize = 10;
 
-  newUser: any = { role: 'ROLE_EMPLOYEE' };
+  newUser: any = {
+    name: '',
+    email: '',
+    password: '',
+    role: 'ROLE_EMPLOYEE',
+    department: '',
+    joiningDate: '',
+    gender: '',
+    contact: '',
+    address: ''
+  };
 
   constructor(
     private userService: UserService,
@@ -64,20 +75,85 @@ export class UserListComponent implements OnInit {
   }
 
   onCreateUser(): void {
+    console.log('Form submission started');
+    console.log('Current newUser data:', this.newUser);
+
+    if (!this.validateForm()) {
+      console.log('Form validation failed');
+      return;
+    }
+
+    console.log('Form validation passed, submitting to API');
     this.isSubmitting = true;
+
     this.userService.createUser(this.tenantId, this.newUser).subscribe({
-      next: () => {
-        this.toastr.success('User created successfully!');
+      next: (response) => {
+        console.log('User created successfully:', response);
+        this.toastr.success('User created successfully!', 'Success');
         this.loadUsers();
         this.closeModalButton.nativeElement.click();
-        this.newUser = { role: 'ROLE_EMPLOYEE' };
+        this.resetForm();
         this.isSubmitting = false;
       },
       error: (err) => {
-        this.toastr.error(err.error.message || 'Failed to create user.');
+        console.error('Error creating user:', err);
+        this.toastr.error(err.error?.message || 'Failed to create user.', 'Error');
         this.isSubmitting = false;
       }
     });
+  }
+
+  private validateForm(): boolean {
+    if (!this.newUser.name || !this.newUser.email || !this.newUser.password || !this.newUser.role || !this.newUser.joiningDate) {
+      this.toastr.warning('Please fill in all required fields.', 'Validation Error');
+      return false;
+    }
+
+    if (this.newUser.password.length < 8) {
+      this.toastr.warning('Password must be at least 8 characters long.', 'Validation Error');
+      return false;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(this.newUser.email)) {
+      this.toastr.warning('Please enter a valid email address.', 'Validation Error');
+      return false;
+    }
+
+    return true;
+  }
+
+  resetForm(): void {
+    this.newUser = {
+      role: 'ROLE_EMPLOYEE',
+      name: '',
+      email: '',
+      password: '',
+      department: '',
+      joiningDate: '',
+      gender: '',
+      contact: '',
+      address: ''
+    };
+    this.showPassword = false;
+  }
+
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
+  }
+
+  // Debug method to test input binding
+  onInputChange(field: string, value: any): void {
+    console.log(`Input changed - ${field}:`, value);
+    console.log('Current newUser object:', this.newUser);
+  }
+
+  // Test method to verify form data
+  testFormData(): void {
+    console.log('=== FORM DATA TEST ===');
+    console.log('newUser object:', JSON.stringify(this.newUser, null, 2));
+    console.log('Form valid:', this.validateForm());
+    alert('Check console for form data. Current name: ' + (this.newUser.name || 'No name entered'));
   }
 
   toggleUserStatus(user: User): void {

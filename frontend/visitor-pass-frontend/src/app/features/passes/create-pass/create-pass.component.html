@@ -7,26 +7,74 @@
       <form (ngSubmit)="onCreatePass()" #passForm="ngForm">
         <div class="row">
           <div class="col-md-6 mb-3">
-            <label class="form-label">Visitor's Full Name</label>
+            <label class="form-label">
+              <i class="bi bi-person-fill me-2 text-primary"></i>Visitor's Full Name
+            </label>
             <input type="text" class="form-control" name="visitorName" [(ngModel)]="passData.visitorName" required>
           </div>
           <div class="col-md-6 mb-3">
-            <label class="form-label">Visitor's Company</label>
+            <label class="form-label">
+              <i class="bi bi-envelope-fill me-2 text-primary"></i>Visitor's Email Address
+            </label>
+            <input type="email" class="form-control" name="visitorEmail" [(ngModel)]="passData.visitorEmail" required email
+                   placeholder="visitor@example.com">
+            <div class="form-text">
+              <i class="bi bi-info-circle me-1"></i>Pass details will be sent to this email address
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">
+              <i class="bi bi-building me-2 text-primary"></i>Visitor's Company
+            </label>
             <input type="text" class="form-control" name="visitorCompany" [(ngModel)]="passData.visitorCompany">
           </div>
           <div class="col-12 mb-3">
-            <label class="form-label">Purpose of Visit</label>
-            <textarea class="form-control" name="purpose" [(ngModel)]="passData.purpose" required></textarea>
+            <label class="form-label">
+              <i class="bi bi-clipboard-check me-2 text-primary"></i>Purpose of Visit
+            </label>
+            <textarea class="form-control" name="purpose" [(ngModel)]="passData.purpose" required
+                      placeholder="Please describe the purpose of the visit..."></textarea>
           </div>
           <div class="col-md-6 mb-3">
-            <label class="form-label">Date and Time of Visit</label>
+            <label class="form-label">
+              <i class="bi bi-calendar-event me-2 text-primary"></i>Date and Time of Visit
+            </label>
             <input type="datetime-local" class="form-control" name="visitDateTime" [(ngModel)]="passData.visitDateTime" required>
           </div>
         </div>
-        <button type="submit" class="btn btn-primary" [disabled]="!passForm.valid || isSubmitting">
-          <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-          {{ isSubmitting ? 'Submitting...' : 'Submit Request' }}
-        </button>
+        <div class="d-flex align-items-center gap-3">
+          <button type="submit" class="btn btn-primary btn-lg" [disabled]="!passForm.valid || isSubmitting">
+            @if (isSubmitting && !isSendingEmail) {
+              <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+              Creating Pass...
+            } @else if (isSendingEmail) {
+              <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+              <i class="bi bi-envelope me-1"></i>Sending Email...
+            } @else {
+              <i class="bi bi-plus-circle me-2"></i>Submit Request
+            }
+          </button>
+
+          @if (isSendingEmail) {
+            <div class="text-muted">
+              <i class="bi bi-info-circle me-1"></i>
+              Sending pass details to visitor's email...
+            </div>
+          }
+        </div>
+
+        <!-- Email Information Alert -->
+        <div class="alert alert-info mt-3 d-flex align-items-center">
+          <i class="bi bi-envelope-check me-2"></i>
+          <div>
+            <strong>Email Notification:</strong> Once the pass is created, details will be automatically sent to the visitor's email address including:
+            <ul class="mb-0 mt-2">
+              <li>Pass confirmation with unique pass code</li>
+              <li>Visit date and time details</li>
+              <li>Instructions for the visit</li>
+            </ul>
+          </div>
+        </div>
       </form>
     </div>
   </div>

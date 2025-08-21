@@ -1,22 +1,96 @@
-<div class="login-wrapper">
-  <div class="login-container">
-    <h2 class="text-center mb-4">Visitor Pass System</h2>
-    <form (ngSubmit)="onLogin()" #loginForm="ngForm">
-      <div class="mb-3">
-        <label for="username" class="form-label">Email address</label>
-        <input type="email" class="form-control" id="username" name="username" [(ngModel)]="credentials.username" required>
+<div class="login-page-wrapper">
+  <div class="login-main-container">
+    <!-- Left Side - Branding & Illustration -->
+    <div class="login-branding-panel">
+      <div class="branding-content">
+        <div class="logo-container">
+          <i class="bi bi-shield-check logo-icon"></i>
+          <h1 class="brand-title">Visitor Pass</h1>
+        </div>
+        <p class="brand-subtitle">Secure & Streamlined Access Management</p>
+        <div class="illustration-container">
+          <img src="assets/security-illustration.svg" alt="Secure Access Illustration" class="login-illustration">
+        </div>
+        <p class="brand-footer">&copy; 2025 Visitor Pass Systems. All rights reserved.</p>
       </div>
-      <div class="mb-3">
-        <label for="password" class="form-label">Password</label>
-        <input type="password" class="form-control" id="password" name="password" [(ngModel)]="credentials.password" required>
+    </div>
+
+    <!-- Right Side - Login Form -->
+    <div class="login-form-panel">
+      <div class="form-content">
+        <h2 class="form-title">Welcome Back!</h2>
+        <p class="form-subtitle">Please sign in to access your dashboard.</p>
+        <form (ngSubmit)="onLogin()" #loginForm="ngForm" novalidate>
+          <div class="form-group mb-4">
+            <label for="username" class="form-label">Email Address</label>
+            <div class="input-group-modern">
+              <i class="bi bi-envelope input-icon"></i>
+              <input
+                type="email"
+                class="form-control-modern"
+                id="username"
+                name="username"
+                placeholder="you@example.com"
+                [(ngModel)]="credentials.username"
+                #username="ngModel"
+                required
+                email>
+            </div>
+            <div *ngIf="username.invalid && (username.dirty || username.touched)" class="validation-error">
+              <small *ngIf="username.errors?.['required']">Email is required.</small>
+              <small *ngIf="username.errors?.['email']">Please enter a valid email address.</small>
+            </div>
+          </div>
+
+          <div class="form-group mb-4">
+            <label for="password" class="form-label">Password</label>
+             <div class="input-group-modern">
+              <i class="bi bi-lock input-icon"></i>
+              <input
+                type="password"
+                class="form-control-modern"
+                id="password"
+                name="password"
+                placeholder="••••••••"
+                [(ngModel)]="credentials.password"
+                #password="ngModel"
+                required>
+            </div>
+             <div *ngIf="password.invalid && (password.dirty || password.touched)" class="validation-error">
+               <small *ngIf="password.errors?.['required']">Password is required.</small>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" value="" id="rememberMe">
+              <label class="form-check-label" for="rememberMe">
+                Remember me
+              </label>
+            </div>
+            <div class="forgot-password-container">
+              <a routerLink="/forgot-password"
+                 class="forgot-password-link"
+                 (click)="onForgotPassword()"
+                 role="button"
+                 tabindex="0"
+                 title="Reset your password">
+                <i class="bi bi-key me-1"></i>Forgot password?
+              </a>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100 btn-login" [disabled]="!loginForm.valid || isSubmitting">
+            <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+            {{ isSubmitting ? 'Signing In...' : 'Sign In' }}
+          </button>
+
+          <div *ngIf="errorMessage" class="alert alert-danger d-flex align-items-center mt-4 p-2">
+             <i class="bi bi-exclamation-triangle-fill me-2"></i>
+             <small>{{ errorMessage }}</small>
+          </div>
+        </form>
       </div>
-      <button type="submit" class="btn btn-primary w-100" [disabled]="!loginForm.valid || isSubmitting">
-        <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
-        {{ isSubmitting ? 'Logging In...' : 'Login' }}
-      </button>
-      <div *ngIf="errorMessage" class="alert alert-danger mt-3">
-        {{ errorMessage }}
-      </div>
-    </form>
+    </div>
   </div>
 </div>

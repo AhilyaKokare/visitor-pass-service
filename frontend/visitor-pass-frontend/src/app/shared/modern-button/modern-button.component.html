@@ -1,0 +1,39 @@
+<button 
+  [type]="type"
+  class="modern-btn"
+  [class]="'variant-' + variant + ' size-' + size"
+  [class.disabled]="disabled"
+  [class.loading]="loading"
+  [class.full-width]="fullWidth"
+  [class.glow-effect]="glowEffect"
+  [disabled]="disabled || loading"
+  (click)="onClick()">
+  
+  <!-- Loading Spinner -->
+  @if (loading) {
+    <div class="btn-spinner">
+      <div class="spinner-ring"></div>
+    </div>
+  }
+  
+  <!-- Left Icon -->
+  @if (icon && iconPosition === 'left' && !loading) {
+    <i class="bi {{ icon }} btn-icon icon-left"></i>
+  }
+  
+  <!-- Button Text -->
+  <span class="btn-text" [class.hidden]="loading">
+    <ng-content></ng-content>
+  </span>
+  
+  <!-- Right Icon -->
+  @if (icon && iconPosition === 'right' && !loading) {
+    <i class="bi {{ icon }} btn-icon icon-right"></i>
+  }
+  
+  <!-- Ripple Effect -->
+  <div class="btn-ripple"></div>
+  
+  <!-- Shine Effect -->
+  <div class="btn-shine"></div>
+</button>

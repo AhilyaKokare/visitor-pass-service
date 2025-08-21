@@ -1,16 +1,17 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { ToastrService } from 'ngx-toastr';
 import { PassService } from '../../../core/services/pass.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { VisitorPass } from '../../../core/models/pass.model';
 import { LoadingSpinnerComponent } from '../../../shared/loading-spinner/loading-spinner.component';
 import { ConfirmationService } from '../../../core/services/confirmation.service';
+import { Page } from '../../../shared/pagination/pagination.component';
 
 @Component({
   selector: 'app-approval-queue',
   standalone: true,
-  imports: [CommonModule, LoadingSpinnerComponent],
+  imports: [CommonModule, LoadingSpinnerComponent, DatePipe],
   templateUrl: './approval-queue.component.html',
 })
 export class ApprovalQueueComponent implements OnInit {
@@ -35,9 +36,9 @@ export class ApprovalQueueComponent implements OnInit {
 
   loadPendingPasses(): void {
     this.isLoading = true;
-    this.passService.getPendingPasses(this.tenantId).subscribe({
-      next: (allPasses) => {
-        this.pendingPasses = allPasses.filter(p => p.status === 'PENDING');
+    this.passService.getPassesForTenant(this.tenantId, 0, 100).subscribe({
+      next: (page: Page<VisitorPass>) => {
+        this.pendingPasses = page.content.filter((p: VisitorPass) => p.status === 'PENDING');
         this.isLoading = false;
       },
       error: () => {
@@ -69,7 +70,7 @@ export class ApprovalQueueComponent implements OnInit {
         },
         error: (err) => this.toastr.error(err.error.message || 'Failed to reject pass.'),
       });
-    } else if (reason !== null) { // User didn't click cancel
+    } else if (reason !== null) {
         this.toastr.warning('A reason is required to reject a pass.');
     }
   }

@@ -3,17 +3,29 @@
 * This file uses the classic @import rule which is more robust for complex libraries.
 */
 
+// Import Bootstrap Icons
+@import "bootstrap-icons/font/bootstrap-icons.css";
+
 // Step 1: Define ALL your variable overrides FIRST.
 // This is the most important rule. You must define your custom
 // variables before Bootstrap's default variables are imported.
-$primary: #003366; // Set a new primary color for buttons, links, etc.
-$secondary: #6c757d;
-$success: #198754;
 
-// Create a custom color map for our theme
+// Modern Color Palette - Gradient-based theme
+$primary: #667eea; // Modern purple-blue
+$secondary: #764ba2; // Deep purple
+$success: #56ab2f; // Fresh green
+$info: #4facfe; // Bright blue
+$warning: #f093fb; // Pink gradient start
+$danger: #f8485e; // Modern red
+
+// Create a comprehensive custom color map for our theme
 $custom-colors: (
-  "primary-dark": #003366,
-  "primary-light": #e6f0ff
+  "primary-dark": #4c63d2,
+  "primary-light": #a8b5ff,
+  "neon-blue": #00d4ff,
+  "neon-purple": #b537f2,
+  "soft-gray": #f8f9fa,
+  "dark-gray": #2c3e50
 );
 
 // Step 2: Import Bootstrap's default functions so we can use them.
@@ -30,43 +42,314 @@ $theme-colors: map-merge($theme-colors, $custom-colors);
 // This will now use your overridden variables and merged theme-colors map.
 @import "bootstrap/scss/bootstrap";
 
-
 // --- Your Custom Global Styles Can Go Below ---
 
-body {
-  background-color: #f8f9fa;
+// Import Google Fonts for better typography
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
+
+// Define CSS Custom Properties for Gradients
+:root {
+  --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --gradient-success: linear-gradient(135deg, #a8edea 0%, #56ab2f 100%);
+  --gradient-info: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  --gradient-warning: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  --gradient-danger: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+  --gradient-dark: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+  --glass-bg: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --neon-blue: #00d4ff;
+  --neon-purple: #b537f2;
 }
 
+// Global body styles with modern background
+body {
+  font-family: 'Inter', sans-serif;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+// Smooth scrolling
+html {
+  scroll-behavior: smooth;
+}
+
+// Content area with glassmorphism effect
 #content {
   width: 100%;
-  padding: 1rem 2rem;
+  padding: 1.5rem 2rem;
   min-height: 100vh;
+  backdrop-filter: blur(10px);
 }
 
+// Enhanced card styles with glassmorphism and animations
 .card {
   border: 0;
-  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(31, 38, 135, 0.2);
+  }
 }
 
+// Gradient cards
+.card-gradient {
+  background: var(--gradient-primary);
+  color: white;
+
+  .card-title, .card-text {
+    color: white;
+  }
+}
+
+.card-gradient-success {
+  background: var(--gradient-success);
+  color: white;
+}
+
+.card-gradient-info {
+  background: var(--gradient-info);
+  color: white;
+}
+
+.card-gradient-warning {
+  background: var(--gradient-warning);
+  color: white;
+}
+
+// Enhanced table styles
 .table-hover tbody tr:hover {
   background-color: rgba($primary, 0.05);
+  transform: scale(1.01);
+  transition: all 0.2s ease;
 }
 
-// Custom styles for the dashboard cards
+// Custom styles for the dashboard cards with neon borders
 .card.border-start {
-    border-width: 0 0 0 0.25rem !important;
-}
-.border-start-primary { border-left-color: $primary !important; }
-.border-start-info { border-left-color: $info !important; }
-.border-start-success { border-left-color: $success !important; }
-.border-start-warning { border-left-color: $warning !important; }
+  border-width: 0 0 0 0.25rem !important;
+  position: relative;
 
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 4px;
+    border-radius: 0 4px 4px 0;
+    animation: neonGlow 2s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes neonGlow {
+  from {
+    box-shadow: 0 0 5px currentColor, 0 0 10px currentColor;
+  }
+  to {
+    box-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 30px currentColor;
+  }
+}
+
+.border-start-primary {
+  border-left-color: $primary !important;
+  &::before { background: $primary; }
+}
+.border-start-info {
+  border-left-color: $info !important;
+  &::before { background: $info; }
+}
+.border-start-success {
+  border-left-color: $success !important;
+  &::before { background: $success; }
+}
+.border-start-warning {
+  border-left-color: $warning !important;
+  &::before { background: $warning; }
+}
+
+// Typography enhancements
 .text-xs {
-    font-size: 0.8rem;
+  font-size: 0.8rem;
+  font-weight: 500;
 }
+
 .fw-bold {
-    font-weight: 700 !important;
+  font-weight: 700 !important;
 }
+
 .text-gray-800 {
-    color: #5a5c69;
+  color: #2c3e50;
+}
+
+// Heading styles with gradients
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+}
+
+.text-gradient {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+// Button enhancements
+.btn {
+  border-radius: 12px;
+  font-weight: 500;
+  padding: 0.75rem 1.5rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+  }
+
+  &:hover::before {
+    left: 100%;
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.btn-primary {
+  background: var(--gradient-primary);
+  border: none;
+
+  &:hover {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+  }
+}
+
+// Floating animation
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.float-animation {
+  animation: float 3s ease-in-out infinite;
+}
+
+// Pulse animation
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.pulse-animation {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+// Additional Utility Classes
+.text-shadow {
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.backdrop-blur {
+  backdrop-filter: blur(20px);
+}
+
+.glass-morphism {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+}
+
+// Hover Effects
+.hover-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.hover-glow {
+  transition: box-shadow 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+  }
+}
+
+// Loading States
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+// Status Indicators
+.status-online {
+  background: #28a745;
+  box-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
+}
+
+.status-offline {
+  background: #dc3545;
+  box-shadow: 0 0 10px rgba(220, 53, 69, 0.5);
+}
+
+.status-warning {
+  background: #ffc107;
+  box-shadow: 0 0 10px rgba(255, 193, 7, 0.5);
+}
+
+// Modern Scrollbar
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 4px;
+
+  &:hover {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+  }
+}
+
+// Selection Styles
+::selection {
+  background: rgba(102, 126, 234, 0.3);
+  color: #2c3e50;
+}
+
+::-moz-selection {
+  background: rgba(102, 126, 234, 0.3);
+  color: #2c3e50;
 }

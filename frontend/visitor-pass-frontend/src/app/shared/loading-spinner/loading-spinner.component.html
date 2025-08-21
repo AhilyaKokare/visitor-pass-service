@@ -1,5 +1,28 @@
-<div class="d-flex justify-content-center my-4">
-  <div class="spinner-border text-primary" role="status">
-    <span class="visually-hidden">Loading...</span>
+<div class="modern-loading-container">
+  <div class="loading-spinner-wrapper">
+    <!-- Main Spinner -->
+    <div class="modern-spinner">
+      <div class="spinner-ring"></div>
+      <div class="spinner-ring"></div>
+      <div class="spinner-ring"></div>
+      <div class="spinner-center">
+        <i class="bi bi-shield-check spinner-icon"></i>
+      </div>
+    </div>
+
+    <!-- Loading Text -->
+    <div class="loading-text">
+      <span class="loading-message">{{ message || 'Loading...' }}</span>
+      <div class="loading-dots">
+        <span class="dot"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+      </div>
+    </div>
   </div>
+
+  <!-- Background Overlay (if fullscreen) -->
+  @if (fullscreen) {
+    <div class="loading-overlay"></div>
+  }
 </div>

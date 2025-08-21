@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { VisitorPass } from '../models/pass.model';
+import { VisitorPass, EmailNotificationRequest, EmailNotificationResponse } from '../models/pass.model';
+import { Page } from '../../shared/pagination/pagination.component';
 
 @Injectable({
   providedIn: 'root'
@@ -18,12 +19,18 @@ export class PassService {
     return this.http.post<VisitorPass>(`${this.getApiUrl(tenantId)}/passes`, passData);
   }
 
-  getMyPassHistory(tenantId: number): Observable<VisitorPass[]> {
-    return this.http.get<VisitorPass[]>(`${this.getApiUrl(tenantId)}/passes/history`);
+  getMyPassHistory(tenantId: number, page: number, size: number): Observable<Page<VisitorPass>> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+    return this.http.get<Page<VisitorPass>>(`${this.getApiUrl(tenantId)}/passes/history`, { params });
   }
 
-  getPendingPasses(tenantId: number): Observable<VisitorPass[]> {
-    return this.http.get<VisitorPass[]>(`${this.getApiUrl(tenantId)}/passes`);
+  getPassesForTenant(tenantId: number, page: number, size: number): Observable<Page<VisitorPass>> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+    return this.http.get<Page<VisitorPass>>(`${this.getApiUrl(tenantId)}/passes`, { params });
   }
 
   approvePass(tenantId: number, passId: number): Observable<any> {
@@ -32,5 +39,28 @@ export class PassService {
 
   rejectPass(tenantId: number, passId: number, reason: string): Observable<any> {
     return this.http.post(`${this.getApiUrl(tenantId)}/approvals/${passId}/reject`, { reason });
+  }
+
+  // Email notification methods
+  sendPassCreatedEmail(tenantId: number, emailRequest: EmailNotificationRequest): Observable<EmailNotificationResponse> {
+    return this.http.post<EmailNotificationResponse>(`${this.getApiUrl(tenantId)}/passes/send-email`, emailRequest);
+  }
+
+  sendPassApprovedEmail(tenantId: number, passId: number, visitorEmail: string): Observable<EmailNotificationResponse> {
+    const emailRequest: EmailNotificationRequest = {
+      passId,
+      visitorEmail,
+      emailType: 'PASS_APPROVED'
+    };
+    return this.http.post<EmailNotificationResponse>(`${this.getApiUrl(tenantId)}/passes/send-email`, emailRequest);
+  }
+
+  sendPassRejectedEmail(tenantId: number, passId: number, visitorEmail: string): Observable<EmailNotificationResponse> {
+    const emailRequest: EmailNotificationRequest = {
+      passId,
+      visitorEmail,
+      emailType: 'PASS_REJECTED'
+    };
+    return this.http.post<EmailNotificationResponse>(`${this.getApiUrl(tenantId)}/passes/send-email`, emailRequest);
   }
 }
