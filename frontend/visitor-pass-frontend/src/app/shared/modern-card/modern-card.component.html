@@ -1,0 +1,46 @@
+<div class="modern-card" 
+     [class]="'gradient-' + gradient + ' size-' + size" 
+     [class.hoverable]="hoverable"
+     [class.clickable]="clickable"
+     [class.border-accent]="borderAccent"
+     [class.glow-effect]="glowEffect">
+  
+  <!-- Card Header -->
+  @if (title || subtitle || icon) {
+    <div class="card-header-modern">
+      @if (icon) {
+        <div class="card-icon">
+          <i class="bi {{ icon }}"></i>
+        </div>
+      }
+      @if (title || subtitle) {
+        <div class="card-title-section">
+          @if (title) {
+            <h5 class="card-title-modern">{{ title }}</h5>
+          }
+          @if (subtitle) {
+            <p class="card-subtitle-modern">{{ subtitle }}</p>
+          }
+        </div>
+      }
+    </div>
+  }
+  
+  <!-- Card Body -->
+  <div class="card-body-modern">
+    <ng-content></ng-content>
+  </div>
+  
+  <!-- Card Footer (if content provided) -->
+  <div class="card-footer-modern">
+    <ng-content select="[slot=footer]"></ng-content>
+  </div>
+  
+  <!-- Hover Effect Overlay -->
+  <div class="hover-overlay"></div>
+  
+  <!-- Glow Effect -->
+  @if (glowEffect) {
+    <div class="glow-ring"></div>
+  }
+</div>

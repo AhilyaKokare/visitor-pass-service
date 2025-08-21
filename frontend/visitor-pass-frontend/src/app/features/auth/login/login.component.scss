@@ -1,15 +1,267 @@
-.login-wrapper {
+// Use SASS's built-in color module
+@use 'sass:color';
+
+//
+// --- The rest of your login component styles ---
+//
+.login-page-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: #f0f2f5;
+  padding: 1rem;
+}
+
+.login-main-container {
+  display: flex;
+  width: 100%;
+  max-width: 1200px;
+  min-height: 700px;
+  background: #ffffff;
+  border-radius: 24px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  animation: fadeIn 0.8s ease-out;
+}
+
+.login-branding-panel {
+  flex: 1;
+  background: var(--gradient-primary);
+  color: white;
+  padding: 3rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -50px;
+    left: -50px;
+    width: 200px;
+    height: 200px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    animation: float 8s ease-in-out infinite;
+  }
+}
+
+.branding-content {
+  z-index: 2;
+  animation: slideInUp 0.8s ease-out;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.logo-icon {
+  font-size: 3rem;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+}
+
+.brand-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+}
+
+.brand-subtitle {
+  font-size: 1.1rem;
+  opacity: 0.8;
+  margin-bottom: 2rem;
+}
+
+.login-illustration {
+  max-width: 350px;
+  width: 100%;
+  margin: 1rem 0;
+}
+
+.brand-footer {
+  position: absolute;
+  bottom: 2rem;
+  left: 0;
+  right: 0;
+  font-size: 0.8rem;
+  opacity: 0.6;
+}
+
+.login-form-panel {
+  flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  background-color: #f0f2f5;
+  padding: 3rem;
 }
-.login-container {
-  padding: 2.5rem;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+.form-content {
   width: 100%;
-  max-width: 420px;
+  max-width: 400px;
+  animation: fadeIn 1s ease-out 0.3s backwards;
+}
+
+.form-title {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 2.25rem;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+
+.form-subtitle {
+  color: #6c757d;
+  margin-bottom: 2.5rem;
+}
+
+.form-label {
+  font-weight: 500;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.input-group-modern {
+  position: relative;
+
+  .input-icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #adb5bd;
+    transition: color 0.3s ease;
+  }
+}
+
+.form-control-modern {
+  width: 100%;
+  padding: 0.85rem 1rem 0.85rem 2.75rem;
+  border-radius: 12px;
+  border: 1px solid #dee2e6;
+  background-color: #f8f9fa;
+  transition: all 0.3s ease;
+
+  &:focus {
+    outline: none;
+    border-color: #667eea;
+    background-color: white;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+
+    & + .input-icon, ~ .input-icon {
+      color: #667eea;
+    }
+  }
+}
+
+.validation-error {
+  color: #f8485e;
+  font-size: 0.8rem;
+  margin-top: 0.5rem;
+}
+
+.forgot-password-container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.forgot-password-link {
+  font-size: 0.85rem;
+  color: #667eea !important;
+  text-decoration: none !important;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+
+  &:hover {
+    color: #5a6fd8 !important;
+    text-decoration: underline !important;
+    background-color: rgba(102, 126, 234, 0.1);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &:focus {
+    outline: 2px solid rgba(102, 126, 234, 0.3);
+    outline-offset: 2px;
+    color: #5a6fd8 !important;
+  }
+
+  &:visited {
+    color: #667eea !important;
+  }
+
+  // Add a subtle pulse animation to draw attention
+  animation: subtlePulse 3s ease-in-out infinite;
+
+  // Ensure the link is always clickable
+  pointer-events: auto;
+  z-index: 10;
+
+  i {
+    transition: transform 0.3s ease;
+  }
+
+  &:hover i {
+    transform: scale(1.1);
+  }
+}
+
+// Subtle pulse animation for the forgot password link
+@keyframes subtlePulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.btn-login {
+  padding: 0.9rem;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slideInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 992px) {
+  .login-branding-panel {
+    display: none;
+  }
+  .login-main-container {
+    flex-direction: column;
+    min-height: auto;
+    max-width: 500px;
+  }
+  .login-form-panel {
+    padding: 2rem;
+  }
 }

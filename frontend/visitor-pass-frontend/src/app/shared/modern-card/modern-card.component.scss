@@ -1,0 +1,218 @@
+// Modern Card Base Styles
+.modern-card {
+  position: relative;
+  border-radius: 20px;
+  padding: 1.5rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(20px);
+  overflow: hidden;
+  
+  // Default glass effect
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+    z-index: 1;
+  }
+  
+  &.hoverable:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(31, 38, 135, 0.2);
+    
+    &::before {
+      left: 100%;
+    }
+  }
+  
+  &.clickable {
+    cursor: pointer;
+    
+    &:active {
+      transform: translateY(-2px);
+    }
+  }
+  
+  &.border-accent {
+    border-left: 4px solid;
+    border-left-color: var(--accent-color, #667eea);
+  }
+  
+  &.glow-effect {
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.3), 0 8px 32px rgba(31, 38, 135, 0.37);
+  }
+}
+
+// Gradient Variations
+.modern-card.gradient-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  --accent-color: #ffffff;
+}
+
+.modern-card.gradient-success {
+  background: linear-gradient(135deg, #a8edea 0%, #56ab2f 100%);
+  color: white;
+  --accent-color: #ffffff;
+}
+
+.modern-card.gradient-info {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  color: white;
+  --accent-color: #ffffff;
+}
+
+.modern-card.gradient-warning {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+  --accent-color: #ffffff;
+}
+
+.modern-card.gradient-danger {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+  color: white;
+  --accent-color: #ffffff;
+}
+
+.modern-card.gradient-glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  --accent-color: #667eea;
+}
+
+// Size Variations
+.modern-card.size-small {
+  padding: 1rem;
+  border-radius: 12px;
+  
+  .card-title-modern {
+    font-size: 1rem;
+  }
+}
+
+.modern-card.size-large {
+  padding: 2.5rem;
+  border-radius: 24px;
+  
+  .card-title-modern {
+    font-size: 1.5rem;
+  }
+}
+
+// Card Header
+.card-header-modern {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+  position: relative;
+  z-index: 2;
+  
+  .card-icon {
+    margin-right: 1rem;
+    
+    i {
+      font-size: 2rem;
+      opacity: 0.8;
+    }
+  }
+  
+  .card-title-section {
+    flex: 1;
+    
+    .card-title-modern {
+      margin: 0 0 0.25rem 0;
+      font-weight: 600;
+      font-size: 1.25rem;
+      font-family: 'Poppins', sans-serif;
+    }
+    
+    .card-subtitle-modern {
+      margin: 0;
+      opacity: 0.7;
+      font-size: 0.9rem;
+    }
+  }
+}
+
+// Card Body
+.card-body-modern {
+  position: relative;
+  z-index: 2;
+}
+
+// Card Footer
+.card-footer-modern {
+  margin-top: 1rem;
+  position: relative;
+  z-index: 2;
+  
+  &:empty {
+    display: none;
+  }
+}
+
+// Hover Overlay
+.hover-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.05);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.modern-card.hoverable:hover .hover-overlay {
+  opacity: 1;
+}
+
+// Glow Ring Effect
+.glow-ring {
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border-radius: 22px;
+  background: linear-gradient(45deg, #667eea, #764ba2, #f093fb, #667eea);
+  z-index: -1;
+  animation: rotateGlow 3s linear infinite;
+}
+
+@keyframes rotateGlow {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .modern-card {
+    padding: 1rem;
+    border-radius: 16px;
+    
+    &.size-large {
+      padding: 1.5rem;
+    }
+  }
+  
+  .card-header-modern {
+    .card-icon i {
+      font-size: 1.5rem;
+    }
+    
+    .card-title-modern {
+      font-size: 1.1rem;
+    }
+  }
+}

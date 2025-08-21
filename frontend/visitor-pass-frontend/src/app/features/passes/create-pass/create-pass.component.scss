@@ -1,0 +1,193 @@
+// Create Pass Component Styles
+.container {
+  max-width: 800px;
+}
+
+.card {
+  border: none;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+}
+
+.card-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 2rem;
+  border: none;
+
+  h4 {
+    margin: 0;
+    font-weight: 600;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+
+    &::before {
+      content: '\F4A5'; // Bootstrap icon for pass
+      font-family: 'bootstrap-icons';
+      margin-right: 0.75rem;
+      font-size: 1.75rem;
+    }
+  }
+}
+
+.card-body {
+  padding: 2rem;
+}
+
+// Form Enhancements
+.form-label {
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+
+  i {
+    font-size: 1rem;
+  }
+}
+
+.form-control {
+  border-radius: 12px;
+  border: 2px solid #e9ecef;
+  padding: 0.75rem 1rem;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+
+  &:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    transform: translateY(-1px);
+  }
+
+  &:hover {
+    border-color: #ced4da;
+  }
+}
+
+.form-text {
+  color: #6c757d;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+
+  i {
+    color: #17a2b8;
+  }
+}
+
+// Button Enhancements
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 12px;
+  padding: 0.75rem 2rem;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+// Email Information Alert
+.alert-info {
+  background: linear-gradient(135deg, rgba(79, 172, 254, 0.1) 0%, rgba(0, 242, 254, 0.1) 100%);
+  border: 1px solid rgba(79, 172, 254, 0.2);
+  border-radius: 12px;
+  color: #2c3e50;
+
+  strong {
+    color: #4facfe;
+  }
+
+  ul {
+    padding-left: 1.2rem;
+
+    li {
+      margin-bottom: 0.25rem;
+      color: #6c757d;
+    }
+  }
+}
+
+// Loading States
+.spinner-border-sm {
+  width: 1rem;
+  height: 1rem;
+}
+
+// Form Row Spacing
+.row {
+  margin-bottom: 1rem;
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .card-header {
+    padding: 1.5rem;
+
+    h4 {
+      font-size: 1.25rem;
+    }
+  }
+
+  .card-body {
+    padding: 1.5rem;
+  }
+
+  .btn-primary {
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+
+  .d-flex.gap-3 {
+    flex-direction: column;
+    gap: 1rem !important;
+  }
+}
+
+// Animation for form elements
+.form-control, .btn {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Email sending status
+.text-muted {
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+
+  i {
+    color: #17a2b8;
+  }
+}

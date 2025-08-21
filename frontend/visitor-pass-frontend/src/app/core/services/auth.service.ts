@@ -57,4 +57,16 @@ export class AuthService {
   getCurrentUser() {
     return this.currentUserSubject.asObservable();
   }
+
+  // Forgot Password Functionality
+  forgotPassword(email: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/forgot-password`, { email });
+  }
+
+  resetPassword(token: string, newPassword: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/reset-password`, {
+      token,
+      newPassword
+    });
+  }
 }

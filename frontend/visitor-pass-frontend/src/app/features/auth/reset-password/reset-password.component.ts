@@ -1,0 +1,146 @@
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { RouterModule, Router, ActivatedRoute } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
+import { ToastrService } from 'ngx-toastr';
+import { LoadingSpinnerComponent } from '../../../shared/loading-spinner/loading-spinner.component';
+
+@Component({
+  selector: 'app-reset-password',
+  standalone: true,
+  imports: [CommonModule, FormsModule, RouterModule, LoadingSpinnerComponent],
+  templateUrl: './reset-password.component.html',
+  styleUrls: ['./reset-password.component.scss']
+})
+export class ResetPasswordComponent implements OnInit {
+  token: string = '';
+  newPassword: string = '';
+  confirmPassword: string = '';
+  isSubmitting: boolean = false;
+  isPasswordReset: boolean = false;
+  errorMessage: string = '';
+  showPassword: boolean = false;
+  showConfirmPassword: boolean = false;
+
+  // Password strength indicators
+  passwordStrength: {
+    hasMinLength: boolean;
+    hasUpperCase: boolean;
+    hasLowerCase: boolean;
+    hasNumber: boolean;
+    hasSpecialChar: boolean;
+  } = {
+    hasMinLength: false,
+    hasUpperCase: false,
+    hasLowerCase: false,
+    hasNumber: false,
+    hasSpecialChar: false
+  };
+
+  constructor(
+    private authService: AuthService,
+    private toastr: ToastrService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {}
+
+  ngOnInit(): void {
+    // Get token from URL parameters
+    this.route.queryParams.subscribe(params => {
+      this.token = params['token'] || '';
+      if (!this.token) {
+        this.toastr.error('Invalid reset link. Please request a new password reset.', 'Invalid Token');
+        this.router.navigate(['/forgot-password']);
+      }
+    });
+  }
+
+  onPasswordChange(): void {
+    this.checkPasswordStrength();
+    this.clearErrors();
+  }
+
+  onConfirmPasswordChange(): void {
+    this.clearErrors();
+  }
+
+  private checkPasswordStrength(): void {
+    const password = this.newPassword;
+    this.passwordStrength = {
+      hasMinLength: password.length >= 8,
+      hasUpperCase: /[A-Z]/.test(password),
+      hasLowerCase: /[a-z]/.test(password),
+      hasNumber: /\d/.test(password),
+      hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+    };
+  }
+
+  get isPasswordStrong(): boolean {
+    return Object.values(this.passwordStrength).every(criteria => criteria);
+  }
+
+  get passwordsMatch(): boolean {
+    return this.newPassword === this.confirmPassword;
+  }
+
+  private clearErrors(): void {
+    this.errorMessage = '';
+  }
+
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
+  }
+
+  toggleConfirmPasswordVisibility(): void {
+    this.showConfirmPassword = !this.showConfirmPassword;
+  }
+
+  onSubmit(): void {
+    // Validation
+    if (!this.newPassword || !this.confirmPassword) {
+      this.errorMessage = 'Please fill in all fields.';
+      return;
+    }
+
+    if (!this.isPasswordStrong) {
+      this.errorMessage = 'Password does not meet the required criteria.';
+      return;
+    }
+
+    if (!this.passwordsMatch) {
+      this.errorMessage = 'Passwords do not match.';
+      return;
+    }
+
+    this.isSubmitting = true;
+    this.errorMessage = '';
+
+    this.authService.resetPassword(this.token, this.newPassword).subscribe({
+      next: () => {
+        this.isPasswordReset = true;
+        this.isSubmitting = false;
+        this.toastr.success('Your password has been reset successfully!', 'Password Reset');
+      },
+      error: (error) => {
+        this.isSubmitting = false;
+        if (error.status === 403) {
+          this.errorMessage = 'Invalid or expired reset token. Please request a new password reset.';
+          this.toastr.error('Reset link has expired or is invalid.', 'Invalid Token');
+        } else if (error.status === 400) {
+          this.errorMessage = 'Password does not meet the required criteria.';
+        } else {
+          this.errorMessage = 'An error occurred. Please try again later.';
+        }
+      }
+    });
+  }
+
+  goToLogin(): void {
+    this.router.navigate(['/login']);
+  }
+
+  requestNewReset(): void {
+    this.router.navigate(['/forgot-password']);
+  }
+}

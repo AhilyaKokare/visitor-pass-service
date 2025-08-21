@@ -1,0 +1,12 @@
+<ng-container *ngIf="isLoggedIn; else loginView">
+  <div class="d-flex">
+    <app-sidebar></app-sidebar>
+    <main class="w-100 bg-light">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</ng-container>
+
+<ng-template #loginView>
+  <router-outlet></router-outlet>
+</ng-template>
