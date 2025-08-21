@@ -43,4 +43,6 @@ public interface VisitorPassRepository extends JpaRepository<VisitorPass, Long> 
     long countPassesForTenantToday(Long tenantId);
 
     List<VisitorPass> findTop10ByOrderByCreatedAtDesc();
+
+    long countByCreatedByIdAndStatus(Long userId, String status);
 }

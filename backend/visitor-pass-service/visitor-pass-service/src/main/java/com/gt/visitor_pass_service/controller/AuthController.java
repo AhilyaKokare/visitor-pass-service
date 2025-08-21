@@ -15,10 +15,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import com.gt.visitor_pass_service.dto.ForgotPasswordRequest;
+import com.gt.visitor_pass_service.dto.ResetPasswordRequest;
+import com.gt.visitor_pass_service.service.AuthService;
 
 @RestController
 @RequestMapping("/api/auth")
-@Tag(name = "0. Authentication", description = "API for user login to obtain a JWT.")
+@Tag(name = "0. Authentication", description = "APIs for user login and password management.")
 public class AuthController {
 
     // VVV INJECT AuthService INSTEAD OF THE OTHER COMPONENTS VVV
@@ -40,5 +44,30 @@ public class AuthController {
         // VVV THE LOGIC IS NOW A SIMPLE, SINGLE CALL TO THE SERVICE VVV
         String jwt = authService.loginAndGetToken(loginRequest);
         return ResponseEntity.ok(new JwtAuthenticationResponse(jwt));
+    }
+
+    // --- NEW ENDPOINT 1: FORGOT PASSWORD ---
+    @PostMapping("/forgot-password")
+    @Operation(summary = "Initiate Password Reset", description = "Sends a password reset link to the user's email if the account exists.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "If an account with this email exists, a reset link will be sent."),
+            @ApiResponse(responseCode = "400", description = "Invalid email format")
+    })
+    public ResponseEntity<Void> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        authService.initiatePasswordReset(request.getEmail());
+        return ResponseEntity.ok().build(); // Always return 200 OK for security
+    }
+
+    // --- NEW ENDPOINT 2: RESET PASSWORD ---
+    @PostMapping("/reset-password")
+    @Operation(summary = "Reset User Password", description = "Sets a new password for the user using a valid reset token.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Password has been reset successfully."),
+            @ApiResponse(responseCode = "400", description = "Invalid request data (e.g., weak password)"),
+            @ApiResponse(responseCode = "403", description = "Invalid or expired token")
+    })
+    public ResponseEntity<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        authService.completePasswordReset(request.getToken(), request.getNewPassword());
+        return ResponseEntity.ok().build();
     }
 }
