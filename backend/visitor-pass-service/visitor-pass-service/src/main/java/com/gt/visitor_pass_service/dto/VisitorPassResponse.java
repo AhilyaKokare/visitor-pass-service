@@ -8,6 +8,8 @@ public class VisitorPassResponse {
     private Long id;
     private Long tenantId;
     private String visitorName;
+    private String visitorEmail;
+    private String purpose;
     private String status;
     private String passCode;
     private LocalDateTime visitDateTime;

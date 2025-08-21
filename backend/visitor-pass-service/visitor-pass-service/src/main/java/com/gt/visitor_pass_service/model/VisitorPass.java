@@ -15,6 +15,7 @@ public class VisitorPass {
     @JoinColumn(name = "tenant_id")
     private Tenant tenant;
     private String visitorName;
+    private String visitorEmail;
     private String visitorPhone;
     private String purpose;
     private LocalDateTime visitDateTime;

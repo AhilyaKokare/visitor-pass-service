@@ -16,6 +16,8 @@ import org.springframework.context.annotation.Configuration;
 public class RabbitMQConfig {
 
     public static final String EXCHANGE_NAME = "visitor_pass_exchange";
+    public static final String QUEUE_PASS_CREATED_NAME = "pass.created.queue";
+    public static final String ROUTING_KEY_PASS_CREATED = "pass.event.created";
     public static final String QUEUE_APPROVED_NAME = "pass.approved.queue";
     public static final String ROUTING_KEY_APPROVED = "pass.event.approved";
     public static final String QUEUE_REJECTED_NAME = "pass.rejected.queue";
@@ -24,6 +26,8 @@ public class RabbitMQConfig {
     public static final String ROUTING_KEY_EXPIRED = "pass.event.expired";
     public static final String QUEUE_USER_CREATED_NAME = "user.created.queue";
     public static final String ROUTING_KEY_USER_CREATED = "user.event.created";
+    public static final String QUEUE_PASSWORD_RESET_NAME = "password.reset.queue";
+    public static final String ROUTING_KEY_PASSWORD_RESET = "user.event.password_reset";
 
     @Bean
     public RabbitAdmin rabbitAdmin(ConnectionFactory connectionFactory) {
@@ -78,5 +82,25 @@ public class RabbitMQConfig {
     @Bean
     public Binding userCreatedBinding(@Qualifier("userCreatedQueue") Queue queue, TopicExchange exchange) {
         return BindingBuilder.bind(queue).to(exchange).with(ROUTING_KEY_USER_CREATED);
+    }
+
+    @Bean(name = "passwordResetQueue")
+    public Queue passwordResetQueue() {
+        return new Queue(QUEUE_PASSWORD_RESET_NAME, true);
+    }
+
+    @Bean
+    public Binding passwordResetBinding(@Qualifier("passwordResetQueue") Queue queue, TopicExchange exchange) {
+        return BindingBuilder.bind(queue).to(exchange).with(ROUTING_KEY_PASSWORD_RESET);
+    }
+
+    @Bean(name = "passCreatedQueue")
+    public Queue passCreatedQueue() {
+        return new Queue(QUEUE_PASS_CREATED_NAME, true);
+    }
+
+    @Bean
+    public Binding passCreatedBinding(@Qualifier("passCreatedQueue") Queue queue, TopicExchange exchange) {
+        return BindingBuilder.bind(queue).to(exchange).with(ROUTING_KEY_PASS_CREATED);
     }
 }

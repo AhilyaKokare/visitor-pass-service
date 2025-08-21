@@ -3,6 +3,7 @@ package com.gt.visitor_pass_service.model;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @Entity
@@ -37,4 +38,6 @@ public class User {
 
     private String gender;
     private String department;
+    private String passwordResetToken;
+    private LocalDateTime passwordResetTokenExpiry;
 }

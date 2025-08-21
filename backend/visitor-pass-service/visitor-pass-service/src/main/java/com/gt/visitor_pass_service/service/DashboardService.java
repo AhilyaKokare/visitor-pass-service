@@ -11,6 +11,11 @@ import com.gt.visitor_pass_service.repository.VisitorPassRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import com.gt.visitor_pass_service.dto.UserDashboardStatsDTO; // Add this import
+import com.gt.visitor_pass_service.model.User; // Add this import
+import com.gt.visitor_pass_service.repository.UserRepository;
+import com.gt.visitor_pass_service.exception.ResourceNotFoundException;
+
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,15 +27,17 @@ public class DashboardService {
     private final AuditLogRepository auditLogRepository;
     private final VisitorPassService visitorPassService; // For the mapper
     private final WebClient webClient;
+    private final UserRepository userRepository;
 
     public DashboardService(VisitorPassRepository passRepository,
                             AuditLogRepository auditLogRepository,
                             VisitorPassService visitorPassService,
-                            @Value("${services.notification.base-url}") String notificationServiceUrl) {
+                            @Value("${services.notification.base-url}") String notificationServiceUrl, UserRepository userRepository) {
         this.passRepository = passRepository;
         this.auditLogRepository = auditLogRepository;
         this.visitorPassService = visitorPassService;
         this.webClient = WebClient.create(notificationServiceUrl);
+        this.userRepository = userRepository;
     }
 
     public TenantDashboardResponse getTenantDashboardData(Long tenantId) {
@@ -87,5 +94,26 @@ public class DashboardService {
                 .bodyToFlux(EmailAuditLogResponse.class)
                 .collectList()
                 .block(); // Using block for simplicity; reactive is better for high load
+    }
+    public UserDashboardStatsDTO getUserDashboardStats(String userEmail) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "email", userEmail));
+
+        long myPending = passRepository.countByCreatedByIdAndStatus(user.getId(), "PENDING");
+        long myApproved = passRepository.countByCreatedByIdAndStatus(user.getId(), "APPROVED");
+        long myCompleted = passRepository.countByCreatedByIdAndStatus(user.getId(), "CHECKED_OUT");
+
+        long awaitingMyApproval = 0;
+        if ("ROLE_APPROVER".equals(user.getRole()) || "ROLE_TENANT_ADMIN".equals(user.getRole())) {
+            // This counts pending passes for the user's entire tenant
+            awaitingMyApproval = passRepository.countByTenantIdAndStatus(user.getTenant().getId(), "PENDING");
+        }
+
+        return UserDashboardStatsDTO.builder()
+                .myPendingPasses(myPending)
+                .myApprovedPasses(myApproved)
+                .myCompletedPasses(myCompleted)
+                .passesAwaitingMyApproval(awaitingMyApproval)
+                .build();
     }
 }

@@ -45,6 +45,7 @@ public class VisitorPassService {
         pass.setTenant(creator.getTenant());
         pass.setVisitorName(request.getVisitorName());
         pass.setVisitorPhone(request.getVisitorPhone());
+        pass.setVisitorEmail(request.getVisitorEmail());
         pass.setPurpose(request.getPurpose());
         pass.setVisitDateTime(request.getVisitDateTime());
         pass.setStatus("PENDING");
@@ -54,6 +55,18 @@ public class VisitorPassService {
 
         VisitorPass savedPass = passRepository.save(pass);
         auditService.logEvent("PASS_CREATED", creator.getId(), tenantId, savedPass.getId());
+
+        PassCreatedEvent event = PassCreatedEvent.builder()
+                .passId(savedPass.getId())
+                .visitorName(savedPass.getVisitorName())
+                .visitorEmail(savedPass.getVisitorEmail())
+                .visitDateTime(savedPass.getVisitDateTime())
+                .passCode(savedPass.getPassCode())
+                .employeeName(creator.getName())
+                .tenantName(creator.getTenant().getLocationDetails())
+                .build();
+
+        rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE_NAME, RabbitMQConfig.ROUTING_KEY_PASS_CREATED, event);
 
         return mapToResponse(savedPass);
     }
@@ -198,6 +211,8 @@ public class VisitorPassService {
         response.setId(pass.getId());
         response.setTenantId(pass.getTenant().getId());
         response.setVisitorName(pass.getVisitorName());
+        response.setVisitorEmail(pass.getVisitorEmail());
+        response.setPurpose(pass.getPurpose());
         response.setStatus(pass.getStatus());
         response.setPassCode(pass.getPassCode());
         response.setVisitDateTime(pass.getVisitDateTime());
