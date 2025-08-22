@@ -11,7 +11,12 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
 
+<<<<<<< HEAD
     Optional<User> findByPasswordResetToken(String token);
+=======
+    Optional<User> findByContact(String contact);
+
+>>>>>>> e594372 (Updated UI)
     List<User> findByRole(String role);
 
     long countByTenantId(Long tenantId);

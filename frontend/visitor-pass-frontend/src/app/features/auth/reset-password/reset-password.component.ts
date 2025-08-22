@@ -1,19 +1,31 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+<<<<<<< HEAD
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { ToastrService } from 'ngx-toastr';
 import { LoadingSpinnerComponent } from '../../../shared/loading-spinner/loading-spinner.component';
+=======
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
+import { Router, ActivatedRoute, RouterModule } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
+import { ToastrService } from 'ngx-toastr';
+>>>>>>> e594372 (Updated UI)
 
 @Component({
   selector: 'app-reset-password',
   standalone: true,
+<<<<<<< HEAD
   imports: [CommonModule, FormsModule, RouterModule, LoadingSpinnerComponent],
+=======
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+>>>>>>> e594372 (Updated UI)
   templateUrl: './reset-password.component.html',
   styleUrls: ['./reset-password.component.scss']
 })
 export class ResetPasswordComponent implements OnInit {
+<<<<<<< HEAD
   token: string = '';
   newPassword: string = '';
   confirmPassword: string = '';
@@ -88,6 +100,88 @@ export class ResetPasswordComponent implements OnInit {
     this.errorMessage = '';
   }
 
+=======
+  resetPasswordForm: FormGroup;
+  isSubmitting = false;
+  isPasswordReset = false;
+  token: string = '';
+  showPassword = false;
+  showConfirmPassword = false;
+
+  constructor(
+    private fb: FormBuilder,
+    private authService: AuthService,
+    private router: Router,
+    private route: ActivatedRoute,
+    private toastr: ToastrService
+  ) {
+    this.resetPasswordForm = this.fb.group({
+      newPassword: ['', [Validators.required, Validators.minLength(6)]],
+      confirmPassword: ['', [Validators.required]]
+    }, { validators: this.passwordMatchValidator });
+  }
+
+  ngOnInit(): void {
+    this.token = this.route.snapshot.paramMap.get('token') || '';
+    if (!this.token) {
+      this.toastr.error('Invalid reset link');
+      this.router.navigate(['/login']);
+    }
+  }
+
+  passwordMatchValidator(control: AbstractControl): { [key: string]: boolean } | null {
+    const newPassword = control.get('newPassword');
+    const confirmPassword = control.get('confirmPassword');
+    
+    if (newPassword && confirmPassword && newPassword.value !== confirmPassword.value) {
+      return { 'passwordMismatch': true };
+    }
+    return null;
+  }
+
+  onSubmit(): void {
+    if (this.resetPasswordForm.valid) {
+      this.isSubmitting = true;
+      
+      const resetData = {
+        token: this.token,
+        newPassword: this.resetPasswordForm.value.newPassword,
+        confirmPassword: this.resetPasswordForm.value.confirmPassword
+      };
+
+      this.authService.resetPassword(resetData).subscribe({
+        next: (response) => {
+          this.isPasswordReset = true;
+          this.isSubmitting = false;
+          this.toastr.success('Password reset successfully!');
+        },
+        error: (error) => {
+          this.isSubmitting = false;
+          console.error('Reset password error:', error);
+          let errorMessage = 'An error occurred. Please try again.';
+
+          if (error.error) {
+            errorMessage = typeof error.error === 'string' ? error.error : error.error.message || errorMessage;
+          } else if (error.message) {
+            errorMessage = error.message;
+          }
+
+          this.toastr.error(errorMessage);
+        }
+      });
+    } else {
+      this.markFormGroupTouched();
+    }
+  }
+
+  private markFormGroupTouched(): void {
+    Object.keys(this.resetPasswordForm.controls).forEach(key => {
+      const control = this.resetPasswordForm.get(key);
+      control?.markAsTouched();
+    });
+  }
+
+>>>>>>> e594372 (Updated UI)
   togglePasswordVisibility(): void {
     this.showPassword = !this.showPassword;
   }
@@ -96,6 +190,7 @@ export class ResetPasswordComponent implements OnInit {
     this.showConfirmPassword = !this.showConfirmPassword;
   }
 
+<<<<<<< HEAD
   onSubmit(): void {
     // Validation
     if (!this.newPassword || !this.confirmPassword) {
@@ -143,4 +238,9 @@ export class ResetPasswordComponent implements OnInit {
   requestNewReset(): void {
     this.router.navigate(['/forgot-password']);
   }
+=======
+  goToLogin(): void {
+    this.router.navigate(['/login']);
+  }
+>>>>>>> e594372 (Updated UI)
 }

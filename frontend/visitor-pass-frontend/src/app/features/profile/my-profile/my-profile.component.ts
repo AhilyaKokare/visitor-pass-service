@@ -34,7 +34,32 @@ export class MyProfileComponent implements OnInit {
         this.profile = updatedProfile;
         this.toastr.success('Profile updated successfully!');
       },
-      error: () => this.toastr.error('Failed to update profile.')
+      error: (error: any) => {
+        console.error('Profile update failed:', error);
+
+        let errorMessage = 'Failed to update profile.';
+
+        if (error.status === 400) {
+          // Handle validation errors including email uniqueness
+          if (error.error && typeof error.error === 'string') {
+            errorMessage = error.error;
+          } else if (error.error?.message) {
+            errorMessage = error.error.message;
+          } else {
+            errorMessage = 'Invalid input data. Please check all fields.';
+          }
+        } else if (error.status === 409) {
+          errorMessage = 'Email address is already registered. Please use a different email.';
+        } else if (error.error?.message) {
+          errorMessage = error.error.message;
+        }
+
+        this.toastr.error(errorMessage, 'Profile Update Failed', { timeOut: 5000 });
+      }
     });
+  }
+
+  isSuperAdminOrTenantAdmin(): boolean {
+    return this.profile?.role === 'ROLE_SUPER_ADMIN' || this.profile?.role === 'ROLE_TENANT_ADMIN';
   }
 }

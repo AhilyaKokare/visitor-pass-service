@@ -13,7 +13,7 @@ export class UserService {
     return `${environment.apiUrl}/tenants/${tenantId}/admin`;
   }
 
-  constructor(private http: HttpClient) { }
+  constructor(public http: HttpClient) { }
 
   getUsers(tenantId: number, page: number, size: number): Observable<Page<User>> {
     const params = new HttpParams()
@@ -24,7 +24,14 @@ export class UserService {
 
   // THIS IS THE METHOD WE WILL BE USING
   createUser(tenantId: number, userData: any): Observable<User> {
-    return this.http.post<User>(`${this.getApiUrl(tenantId)}/users`, userData);
+    const url = `${this.getApiUrl(tenantId)}/users`;
+    console.log('UserService.createUser called with:');
+    console.log('- URL:', url);
+    console.log('- Tenant ID:', tenantId);
+    console.log('- User Data:', userData);
+    console.log('- API Base URL:', this.getApiUrl(tenantId));
+
+    return this.http.post<User>(url, userData);
   }
 
   updateUserStatus(tenantId: number, userId: number, isActive: boolean): Observable<User> {

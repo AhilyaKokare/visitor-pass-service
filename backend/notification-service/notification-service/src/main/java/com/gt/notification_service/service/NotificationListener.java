@@ -3,6 +3,7 @@ package com.gt.notification_service.service;
 import com.gt.notification_service.dto.PassApprovedEvent;
 import com.gt.notification_service.dto.PassExpiredEvent;
 import com.gt.notification_service.dto.PassRejectedEvent;
+import com.gt.notification_service.dto.PasswordResetEvent;
 import com.gt.notification_service.dto.UserCreatedEvent;
 import com.gt.notification_service.model.EmailAuditLog;
 import com.gt.notification_service.model.EmailStatus;
@@ -98,6 +99,33 @@ public class NotificationListener {
                 event.getNewUserName()
         );
         processEmailNotification(null, event.getNewUserEmail(), subject, body);
+    }
+
+    @RabbitListener(queues = "password.reset.queue", errorHandler = "rabbitMQErrorHandler")
+    public void handlePasswordReset(PasswordResetEvent event) {
+        logger.info("Received PasswordResetEvent for user: {}", event.getUserEmail());
+
+        String subject = "Password Reset Request - " + event.getTenantName();
+        String body = String.format(
+                "Hello %s,\n\n" +
+                "We received a request to reset your password for your %s account.\n\n" +
+                "To reset your password, please click the link below:\n" +
+                "%s\n\n" +
+                "This link will expire in 15 minutes for security reasons.\n\n" +
+                "If you did not request this password reset, please ignore this email. " +
+                "Your password will remain unchanged.\n\n" +
+                "For security reasons, please do not share this link with anyone.\n\n" +
+                "Best regards,\n" +
+                "The %s Team\n\n" +
+                "---\n" +
+                "This is an automated message. Please do not reply to this email.",
+                event.getUserName(),
+                event.getTenantName(),
+                event.getResetUrl(),
+                event.getTenantName()
+        );
+
+        processEmailNotification(null, event.getUserEmail(), subject, body);
     }
 
     private void processEmailNotification(Long passId, String recipientAddress, String subject, String body) {

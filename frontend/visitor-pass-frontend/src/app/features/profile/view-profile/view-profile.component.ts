@@ -30,4 +30,12 @@ export class ViewProfileComponent implements OnInit {
       }
     });
   }
+
+  isSuperAdmin(): boolean {
+    return this.profile?.role === 'ROLE_SUPER_ADMIN';
+  }
+
+  isSuperAdminOrTenantAdmin(): boolean {
+    return this.profile?.role === 'ROLE_SUPER_ADMIN' || this.profile?.role === 'ROLE_TENANT_ADMIN';
+  }
 }

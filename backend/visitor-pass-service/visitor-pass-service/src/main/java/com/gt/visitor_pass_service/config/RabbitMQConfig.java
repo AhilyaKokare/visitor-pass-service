@@ -27,7 +27,11 @@ public class RabbitMQConfig {
     public static final String QUEUE_USER_CREATED_NAME = "user.created.queue";
     public static final String ROUTING_KEY_USER_CREATED = "user.event.created";
     public static final String QUEUE_PASSWORD_RESET_NAME = "password.reset.queue";
+<<<<<<< HEAD
     public static final String ROUTING_KEY_PASSWORD_RESET = "user.event.password_reset";
+=======
+    public static final String ROUTING_KEY_PASSWORD_RESET = "password.reset";
+>>>>>>> e594372 (Updated UI)
 
     @Bean
     public RabbitAdmin rabbitAdmin(ConnectionFactory connectionFactory) {
@@ -64,6 +68,11 @@ public class RabbitMQConfig {
         return new Queue(QUEUE_USER_CREATED_NAME, true);
     }
 
+    @Bean(name = "passwordResetQueue")
+    public Queue passwordResetQueue() {
+        return new Queue(QUEUE_PASSWORD_RESET_NAME, true);
+    }
+
     @Bean
     public Binding approvedBinding(@Qualifier("approvedQueue") Queue queue, TopicExchange exchange) {
         return BindingBuilder.bind(queue).to(exchange).with(ROUTING_KEY_APPROVED);
@@ -84,15 +93,19 @@ public class RabbitMQConfig {
         return BindingBuilder.bind(queue).to(exchange).with(ROUTING_KEY_USER_CREATED);
     }
 
+<<<<<<< HEAD
     @Bean(name = "passwordResetQueue")
     public Queue passwordResetQueue() {
         return new Queue(QUEUE_PASSWORD_RESET_NAME, true);
     }
 
+=======
+>>>>>>> e594372 (Updated UI)
     @Bean
     public Binding passwordResetBinding(@Qualifier("passwordResetQueue") Queue queue, TopicExchange exchange) {
         return BindingBuilder.bind(queue).to(exchange).with(ROUTING_KEY_PASSWORD_RESET);
     }
+<<<<<<< HEAD
 
     @Bean(name = "passCreatedQueue")
     public Queue passCreatedQueue() {
@@ -103,4 +116,6 @@ public class RabbitMQConfig {
     public Binding passCreatedBinding(@Qualifier("passCreatedQueue") Queue queue, TopicExchange exchange) {
         return BindingBuilder.bind(queue).to(exchange).with(ROUTING_KEY_PASS_CREATED);
     }
+=======
+>>>>>>> e594372 (Updated UI)
 }
