@@ -5,6 +5,7 @@ import com.gt.visitor_pass_service.dto.*;
 import com.gt.visitor_pass_service.exception.ResourceNotFoundException;
 import com.gt.visitor_pass_service.model.User;
 import com.gt.visitor_pass_service.model.VisitorPass;
+import com.gt.visitor_pass_service.model.enums.PassStatus;
 import com.gt.visitor_pass_service.repository.UserRepository;
 import com.gt.visitor_pass_service.repository.VisitorPassRepository;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -44,13 +45,13 @@ public class VisitorPassService {
         VisitorPass pass = new VisitorPass();
         pass.setTenant(creator.getTenant());
         pass.setVisitorName(request.getVisitorName());
+        pass.setVisitorEmail(request.getVisitorEmail());
         pass.setVisitorPhone(request.getVisitorPhone());
         pass.setPurpose(request.getPurpose());
         pass.setVisitDateTime(request.getVisitDateTime());
-        pass.setStatus("PENDING");
+        pass.setStatus(PassStatus.PENDING);
         pass.setPassCode(UUID.randomUUID().toString().substring(0, 8).toUpperCase());
         pass.setCreatedBy(creator);
-        pass.setCreatedAt(LocalDateTime.now());
 
         VisitorPass savedPass = passRepository.save(pass);
         auditService.logEvent("PASS_CREATED", creator.getId(), tenantId, savedPass.getId());
@@ -66,18 +67,22 @@ public class VisitorPassService {
         VisitorPass pass = passRepository.findById(passId)
                 .orElseThrow(() -> new ResourceNotFoundException("VisitorPass", "id", passId));
 
-        pass.setStatus("APPROVED");
+        pass.setStatus(PassStatus.APPROVED);
         pass.setApprovedBy(approver);
-        pass.setUpdatedAt(LocalDateTime.now());
 
         VisitorPass savedPass = passRepository.save(pass);
         auditService.logEvent("PASS_APPROVED", approver.getId(), pass.getTenant().getId(), savedPass.getId());
 
+        // VVV THIS IS THE FIX VVV
+        // The event now includes the visitor's email, pass code, and visit date/time
         PassApprovedEvent event = new PassApprovedEvent(
                 savedPass.getId(),
                 savedPass.getTenant().getId(),
                 savedPass.getVisitorName(),
-                savedPass.getCreatedBy().getEmail()
+                savedPass.getVisitorEmail(),
+                savedPass.getCreatedBy().getEmail(),
+                savedPass.getPassCode(), // <-- ADDED
+                savedPass.getVisitDateTime() // <-- ADDED
         );
         rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE_NAME, RabbitMQConfig.ROUTING_KEY_APPROVED, event);
 
@@ -86,13 +91,6 @@ public class VisitorPassService {
 
     /**
      * Rejects a visitor pass request.
-     * This method updates the pass status to 'REJECTED' and publishes an event
-     * for the notification-service to handle.
-     *
-     * @param passId The ID of the pass to reject.
-     * @param approverEmail The email of the user performing the rejection.
-     * @param rejectionReason The reason for the rejection.
-     * @return A DTO of the updated visitor pass.
      */
     public VisitorPassResponse rejectPass(Long passId, String approverEmail, String reason) {
         User approver = userRepository.findByEmail(approverEmail)
@@ -101,9 +99,9 @@ public class VisitorPassService {
         VisitorPass pass = passRepository.findById(passId)
                 .orElseThrow(() -> new ResourceNotFoundException("VisitorPass", "id", passId));
 
-        pass.setStatus("REJECTED");
+        pass.setStatus(PassStatus.REJECTED);
+        pass.setRejectionReason(reason);
         pass.setApprovedBy(approver);
-        pass.setUpdatedAt(LocalDateTime.now());
 
         VisitorPass savedPass = passRepository.save(pass);
         auditService.logEvent("PASS_REJECTED", approver.getId(), pass.getTenant().getId(), savedPass.getId());
@@ -119,18 +117,16 @@ public class VisitorPassService {
         return mapToResponse(savedPass);
     }
 
-
     // Method for Security to check-in a visitor
     public VisitorPassResponse checkIn(Long passId) {
         VisitorPass pass = passRepository.findById(passId)
                 .orElseThrow(() -> new ResourceNotFoundException("VisitorPass", "id", passId));
 
-        if (!pass.getStatus().equals("APPROVED")) {
+        if (pass.getStatus() != PassStatus.APPROVED) {
             throw new IllegalStateException("Pass must be approved before check-in.");
         }
 
-        pass.setStatus("CHECKED_IN");
-        pass.setUpdatedAt(LocalDateTime.now());
+        pass.setStatus(PassStatus.CHECKED_IN);
 
         VisitorPass savedPass = passRepository.save(pass);
         auditService.logEvent("PASS_CHECKED_IN", null, pass.getTenant().getId(), savedPass.getId());
@@ -142,12 +138,11 @@ public class VisitorPassService {
         VisitorPass pass = passRepository.findById(passId)
                 .orElseThrow(() -> new ResourceNotFoundException("VisitorPass", "id", passId));
 
-        if (!pass.getStatus().equals("CHECKED_IN")) {
+        if (pass.getStatus() != PassStatus.CHECKED_IN) {
             throw new IllegalStateException("Pass must be checked-in before it can be checked-out.");
         }
 
-        pass.setStatus("CHECKED_OUT");
-        pass.setUpdatedAt(LocalDateTime.now());
+        pass.setStatus(PassStatus.CHECKED_OUT);
 
         VisitorPass savedPass = passRepository.save(pass);
         auditService.logEvent("PASS_CHECKED_OUT", securityUserId, pass.getTenant().getId(), savedPass.getId());
@@ -159,9 +154,9 @@ public class VisitorPassService {
                 .orElseThrow(() -> new ResourceNotFoundException("VisitorPass", "passCode", passCode));
         return mapToResponse(pass);
     }
-    // Get all passes for a specific tenant
+
     public Page<VisitorPassResponse> getPassesByTenant(Long tenantId, Pageable pageable) {
-        Page<VisitorPass> passPage = passRepository.findByTenantId(tenantId, pageable); // <-- This is the correct call
+        Page<VisitorPass> passPage = passRepository.findByTenantId(tenantId, pageable);
         return passPage.map(this::mapToResponse);
     }
 
@@ -186,7 +181,7 @@ public class VisitorPassService {
                         pass.getId(),
                         pass.getVisitorName(),
                         pass.getPassCode(),
-                        pass.getStatus(),
+                        pass.getStatus().name(),
                         pass.getVisitDateTime(),
                         pass.getCreatedBy().getName()
                 ))
@@ -198,10 +193,23 @@ public class VisitorPassService {
         response.setId(pass.getId());
         response.setTenantId(pass.getTenant().getId());
         response.setVisitorName(pass.getVisitorName());
-        response.setStatus(pass.getStatus());
+        response.setVisitorEmail(pass.getVisitorEmail());
+        response.setVisitorPhone(pass.getVisitorPhone());
+        response.setPurpose(pass.getPurpose());
+        response.setStatus(pass.getStatus().name());
         response.setPassCode(pass.getPassCode());
         response.setVisitDateTime(pass.getVisitDateTime());
         response.setCreatedByEmployeeName(pass.getCreatedBy().getName());
+
+        if (pass.getApprovedBy() != null) {
+            response.setApprovedBy(pass.getApprovedBy().getName());
+        }
+        if (pass.getStatus() == PassStatus.REJECTED) {
+            response.setRejectionReason(pass.getRejectionReason());
+        }
+        
         return response;
     }
+
+    
 }

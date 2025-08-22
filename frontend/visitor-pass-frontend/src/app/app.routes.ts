@@ -47,8 +47,7 @@ export const routes: Routes = [
       },
       // Employee
       { path: 'passes/create', component: CreatePassComponent, canActivate: [roleGuard], data: { expectedRoles: ['ROLE_EMPLOYEE', 'ROLE_TENANT_ADMIN'] } },
-      { path: 'passes/history', component: MyPassHistoryComponent, canActivate: [roleGuard], data: { expectedRoles: ['ROLE_EMPLOYEE', 'ROLE_TENANT_ADMIN'] } },
-
+     { path: 'passes/my-pass-history', component: MyPassHistoryComponent, canActivate: [roleGuard], data: { expectedRoles: ['ROLE_EMPLOYEE', 'ROLE_TENANT_ADMIN'] } },
       // Approver
       { path: 'passes/approve', component: ApprovalQueueComponent, canActivate: [roleGuard], data: { expectedRoles: ['ROLE_APPROVER', 'ROLE_TENANT_ADMIN'] } },
 

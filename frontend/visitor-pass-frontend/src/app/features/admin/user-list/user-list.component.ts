@@ -1,4 +1,5 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+// 1. IMPORT NgZone and other necessary modules
+import { Component, OnInit, NgZone, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule, TitleCasePipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -17,23 +18,26 @@ import { Page, PaginationComponent } from '../../../shared/pagination/pagination
   templateUrl: './user-list.component.html',
 })
 export class UserListComponent implements OnInit {
+
+  // --- RESTORED @ViewChild ---
   @ViewChild('closeModalButton') closeModalButton!: ElementRef;
 
-  userPage: Page<User> | null = null;
+  users: User[] = [];
+  userPageDetails: Page<any> | null = null;
   tenantId!: number;
   isLoading = true;
   isSubmitting = false;
-
   currentPage = 0;
   pageSize = 10;
-
   newUser: any = { role: 'ROLE_EMPLOYEE' };
 
+  // 2. INJECT NgZone
   constructor(
     private userService: UserService,
     private authService: AuthService,
     private toastr: ToastrService,
-    private confirmationService: ConfirmationService
+    private confirmationService: ConfirmationService,
+    private zone: NgZone
   ) {}
 
   ngOnInit(): void {
@@ -48,7 +52,8 @@ export class UserListComponent implements OnInit {
     this.isLoading = true;
     this.userService.getUsers(this.tenantId, this.currentPage, this.pageSize).subscribe({
       next: data => {
-        this.userPage = data;
+        this.users = data.content;
+        this.userPageDetails = data;
         this.isLoading = false;
       },
       error: () => {
@@ -63,14 +68,15 @@ export class UserListComponent implements OnInit {
     this.loadUsers();
   }
 
+  // --- RESTORED onCreateUser METHOD ---
   onCreateUser(): void {
     this.isSubmitting = true;
     this.userService.createUser(this.tenantId, this.newUser).subscribe({
       next: () => {
         this.toastr.success('User created successfully!');
-        this.loadUsers();
-        this.closeModalButton.nativeElement.click();
-        this.newUser = { role: 'ROLE_EMPLOYEE' };
+        this.loadUsers(); // Reload the list to show the new user
+        this.closeModalButton.nativeElement.click(); // Close the modal
+        this.newUser = { role: 'ROLE_EMPLOYEE' }; // Reset the form
         this.isSubmitting = false;
       },
       error: (err) => {
@@ -80,15 +86,31 @@ export class UserListComponent implements OnInit {
     });
   }
 
-  toggleUserStatus(user: User): void {
-    const action = user.isActive ? 'Deactivate' : 'Activate';
-    if (this.confirmationService.confirm(`Are you sure you want to ${action} user "${user.name}"?`)) {
-      this.userService.updateUserStatus(this.tenantId, user.id, !user.isActive).subscribe({
-        next: () => {
-          this.toastr.success(`User status updated.`);
-          this.loadUsers();
+  toggleUserStatus(userToToggle: User): void {
+    const action = userToToggle.isActive ? 'Deactivate' : 'Activate';
+    const newStatus = !userToToggle.isActive;
+
+    if (this.confirmationService.confirm(`Are you sure you want to ${action} user "${userToToggle.name}"?`)) {
+      this.userService.updateUserStatus(this.tenantId, userToToggle.id, newStatus).subscribe({
+        next: (updatedUserFromServer) => {
+          
+          // 3. WRAP the UI update logic inside zone.run()
+          this.zone.run(() => {
+            this.toastr.success(`User has been ${action.toLowerCase()}d.`);
+            
+            const index = this.users.findIndex(u => u.id === updatedUserFromServer.id);
+            if (index !== -1) {
+              const newUsers = [...this.users];
+              newUsers[index] = updatedUserFromServer;
+              this.users = newUsers; 
+            } else {
+              this.loadUsers(); // Fallback
+            }
+          });
         },
-        error: () => this.toastr.error('Failed to update user status.')
+        error: (err) => {
+          this.toastr.error(err?.error?.message || 'Failed to update user status.');
+        }
       });
     }
   }

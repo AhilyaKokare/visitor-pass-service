@@ -30,7 +30,11 @@ export class ApprovalQueueComponent implements OnInit {
     if (user && user.tenantId) {
       this.tenantId = user.tenantId;
       this.loadPendingPasses();
+    }else {
+      this.toastr.error('Could not identify your location. Please log in again.');
+      this.isLoading = false; // Stop loading if tenantId is missing
     }
+
   }
 
   loadPendingPasses(): void {
@@ -40,8 +44,9 @@ export class ApprovalQueueComponent implements OnInit {
         this.pendingPasses = allPasses.filter(p => p.status === 'PENDING');
         this.isLoading = false;
       },
-      error: () => {
+      error: (err) => {
         this.toastr.error('Failed to load approval queue.');
+        console.error(err);
         this.isLoading = false;
       }
     });

@@ -4,6 +4,7 @@ import com.gt.visitor_pass_service.config.RabbitMQConfig;
 import com.gt.visitor_pass_service.dto.PassExpiredEvent;
 import com.gt.visitor_pass_service.model.User;
 import com.gt.visitor_pass_service.model.VisitorPass;
+import com.gt.visitor_pass_service.model.enums.PassStatus; // <-- IMPORT THE ENUM
 import com.gt.visitor_pass_service.repository.UserRepository;
 import com.gt.visitor_pass_service.repository.VisitorPassRepository;
 import org.slf4j.Logger;
@@ -42,7 +43,9 @@ public class PassExpiryService {
     @Transactional
     public void expireOldPasses() {
         logger.info("Running scheduled job: Expiring old visitor passes...");
-        List<VisitorPass> passesToExpire = passRepository.findOverdueApprovedPasses();
+        // Assuming findOverdueApprovedPasses correctly finds passes with status APPROVED
+        // and a visitDateTime in the past.
+       List<VisitorPass> passesToExpire = passRepository.findOverdueApprovedPasses(PassStatus.APPROVED, LocalDateTime.now());
 
         if (passesToExpire.isEmpty()) {
             logger.info("No overdue passes to expire.");
@@ -50,8 +53,10 @@ public class PassExpiryService {
         }
 
         for (VisitorPass pass : passesToExpire) {
-            pass.setStatus("EXPIRED");
-            pass.setUpdatedAt(LocalDateTime.now());
+            // VVV THIS IS THE FIX VVV
+            pass.setStatus(PassStatus.EXPIRED); // Use the enum instead of a string
+            // The updatedAt field is now handled automatically by @UpdateTimestamp
+
             passRepository.save(pass);
 
             // Log the system event (no specific user performed this action)
@@ -70,8 +75,6 @@ public class PassExpiryService {
                     pass.getTenant().getId()
             );
 
-            // For expired events, you might want a different routing key or use the same one
-            // We'll create a new one for clarity in RabbitMQConfig
             rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE_NAME, RabbitMQConfig.ROUTING_KEY_EXPIRED, event);
         }
 
@@ -84,12 +87,8 @@ public class PassExpiryService {
      * @return The email of the Tenant Admin, or null if not found.
      */
     private String findTenantAdminEmail(Long tenantId) {
-        // This is a simple implementation. A more optimized approach would be a custom query.
-        Optional<User> tenantAdmin = userRepository.findAll().stream()
-                .filter(user -> "ROLE_TENANT_ADMIN".equals(user.getRole()) &&
-                        user.getTenant() != null &&
-                        user.getTenant().getId().equals(tenantId))
-                .findFirst();
+        // Find a user with the specified role for the given tenant
+        Optional<User> tenantAdmin = userRepository.findFirstByTenantIdAndRole(tenantId, "ROLE_TENANT_ADMIN");
         return tenantAdmin.map(User::getEmail).orElse(null);
     }
 }
