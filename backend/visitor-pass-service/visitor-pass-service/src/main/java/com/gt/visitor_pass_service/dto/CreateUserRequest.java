@@ -1,12 +1,14 @@
 package com.gt.visitor_pass_service.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import lombok.ToString;
 import java.time.LocalDate;
 
 @Data
+@ToString
 public class CreateUserRequest {
     @NotBlank(message = "Name cannot be blank")
     private String name;
@@ -22,7 +24,7 @@ public class CreateUserRequest {
     private String role; // e.g., "ROLE_EMPLOYEE", "ROLE_APPROVER", "ROLE_SECURITY"
 
     // --- NEW FIELDS ---
-    @NotNull(message = "Joining date cannot be null")
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate joiningDate;
 
     private String address;

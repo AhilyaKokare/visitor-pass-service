@@ -24,6 +24,8 @@ public class RabbitMQConfig {
     public static final String ROUTING_KEY_EXPIRED = "pass.event.expired";
     public static final String QUEUE_USER_CREATED_NAME = "user.created.queue";
     public static final String ROUTING_KEY_USER_CREATED = "user.event.created";
+    public static final String QUEUE_PASSWORD_RESET_NAME = "password.reset.queue";
+    public static final String ROUTING_KEY_PASSWORD_RESET = "password.reset";
 
     @Bean
     public RabbitAdmin rabbitAdmin(ConnectionFactory connectionFactory) {
@@ -60,6 +62,11 @@ public class RabbitMQConfig {
         return new Queue(QUEUE_USER_CREATED_NAME, true);
     }
 
+    @Bean(name = "passwordResetQueue")
+    public Queue passwordResetQueue() {
+        return new Queue(QUEUE_PASSWORD_RESET_NAME, true);
+    }
+
     @Bean
     public Binding approvedBinding(@Qualifier("approvedQueue") Queue queue, TopicExchange exchange) {
         return BindingBuilder.bind(queue).to(exchange).with(ROUTING_KEY_APPROVED);
@@ -78,5 +85,10 @@ public class RabbitMQConfig {
     @Bean
     public Binding userCreatedBinding(@Qualifier("userCreatedQueue") Queue queue, TopicExchange exchange) {
         return BindingBuilder.bind(queue).to(exchange).with(ROUTING_KEY_USER_CREATED);
+    }
+
+    @Bean
+    public Binding passwordResetBinding(@Qualifier("passwordResetQueue") Queue queue, TopicExchange exchange) {
+        return BindingBuilder.bind(queue).to(exchange).with(ROUTING_KEY_PASSWORD_RESET);
     }
 }

@@ -34,6 +34,13 @@
               <span *ngIf="isLoggingIn" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
               {{ isLoggingIn ? 'Logging In...' : 'Login' }}
             </button>
+
+            <!-- Forgot Password Link -->
+            <div class="text-center mt-3 animate__animated animate__fadeInUp" style="animation-delay: 0.4s;">
+              <a routerLink="/forgot-password" class="text-decoration-none">
+                Forgot your password?
+              </a>
+            </div>
           </form>
         </div>
       </div>

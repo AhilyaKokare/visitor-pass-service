@@ -10,13 +10,15 @@
           <p><strong>Name:</strong> {{ profile.name }}</p>
           <p><strong>Unique ID:</strong> {{ profile.uniqueId }}</p>
           <p><strong>Role:</strong> {{ profile.role.replace('ROLE_', '') | titlecase }}</p>
-          <p><strong>Department:</strong> {{ profile.department || 'N/A' }}</p>
+          <!-- Department field removed for Super Admin and Tenant Admin -->
+          <p *ngIf="!isSuperAdminOrTenantAdmin()"><strong>Department:</strong> {{ profile.department || 'N/A' }}</p>
         </div>
         <div class="col-md-6">
           <p><strong>Email:</strong> {{ profile.email }}</p>
           <p><strong>Contact:</strong> {{ profile.contact || 'N/A' }}</p>
           <p><strong>Address:</strong> {{ profile.address || 'N/A' }}</p>
-          <p><strong>Joining Date:</strong> {{ profile.joiningDate | date:'longDate' }}</p>
+          <!-- Joining Date field removed for Super Admin only -->
+          <p *ngIf="!isSuperAdmin()"><strong>Joining Date:</strong> {{ profile.joiningDate | date:'longDate' }}</p>
         </div>
       </div>
     </div>

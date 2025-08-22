@@ -1,12 +1,13 @@
 import { Routes } from '@angular/router';
 import { LoginComponent } from './features/auth/login/login.component';
+import { ForgotPasswordComponent } from './features/auth/forgot-password/forgot-password.component';
+import { ResetPasswordComponent } from './features/auth/reset-password/reset-password.component';
 import { MainLayoutComponent } from './layout/main-layout/main-layout.component';
 import { authGuard } from './core/guards/auth.guard';
 import { roleGuard } from './core/guards/role.guard';
 import { MainDashboardComponent } from './features/dashboard/main-dashboard/main-dashboard.component';
 import { SuperAdminDashboardComponent } from './features/admin/super-admin-dashboard/super-admin-dashboard.component';
 import { UserListComponent } from './features/admin/user-list/user-list.component';
-import { UserCreateComponent } from './features/admin/user-create/user-create.component';
 import { ViewProfileComponent } from './features/profile/view-profile/view-profile.component';
 import { EditProfileComponent } from './features/profile/edit-profile/edit-profile.component';
 import { CreatePassComponent } from './features/passes/create-pass/create-pass.component';
@@ -17,6 +18,8 @@ import { HomeComponent } from './features/dashboard/home/home.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
+  { path: 'forgot-password', component: ForgotPasswordComponent },
+  { path: 'reset-password/:token', component: ResetPasswordComponent },
   {
     path: '',
     component: MainLayoutComponent,
@@ -31,20 +34,8 @@ export const routes: Routes = [
       { path: 'super-admin/dashboard', component: SuperAdminDashboardComponent, canActivate: [roleGuard], data: { expectedRoles: ['ROLE_SUPER_ADMIN'] } },
 
       // Tenant Admin
-      { path: 'tenant-admin/dashboard', component: UserListComponent, canActivate: [roleGuard], data: { expectedRoles: ['ROLE_TENANT_ADMIN'] } }, // Redirect to user list
+      { path: 'tenant-admin/dashboard', component: UserListComponent, canActivate: [roleGuard], data: { expectedRoles: ['ROLE_TENANT_ADMIN'] } },
       { path: 'tenant-admin/users', component: UserListComponent, canActivate: [roleGuard], data: { expectedRoles: ['ROLE_TENANT_ADMIN'] } },
-      { path: 'tenant-admin/users/create', component: UserCreateComponent, canActivate: [roleGuard], data: { expectedRoles: ['ROLE_TENANT_ADMIN'] } },
-
-      {
-        path: 'tenant-admin/dashboard',
-        component: UserListComponent, // <-- This should be the main view
-        canActivate: [roleGuard], data: { expectedRoles: ['ROLE_TENANT_ADMIN'] }
-      },
-       {
-        path: 'tenant-admin/users',
-        component: UserListComponent, // This is the explicit route for user management
-        canActivate: [roleGuard], data: { expectedRoles: ['ROLE_TENANT_ADMIN'] }
-      },
       // Employee
       { path: 'passes/create', component: CreatePassComponent, canActivate: [roleGuard], data: { expectedRoles: ['ROLE_EMPLOYEE', 'ROLE_TENANT_ADMIN'] } },
      { path: 'passes/my-pass-history', component: MyPassHistoryComponent, canActivate: [roleGuard], data: { expectedRoles: ['ROLE_EMPLOYEE', 'ROLE_TENANT_ADMIN'] } },

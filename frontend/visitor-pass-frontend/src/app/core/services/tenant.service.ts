@@ -19,4 +19,12 @@ export class TenantService {
   createTenantAndAdmin(data: any): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/tenants`, data);
   }
+
+  getPaginatedLocations(page: number = 0, size: number = 10): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/locations?page=${page}&size=${size}`);
+  }
+
+  deleteLocationAdmin(tenantId: number): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/locations/${tenantId}/admin`);
+  }
 }

@@ -25,4 +25,9 @@ public class CreateTenantAndAdminRequest {
     private String adminPassword;
 
     private String adminContact;
+
+    // Additional admin fields
+    private String adminAddress;
+    private String adminGender;
+    private String adminDepartment;
 }

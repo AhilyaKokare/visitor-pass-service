@@ -39,7 +39,28 @@ export class AuthService {
   }
 
   isLoggedIn(): boolean {
-    return !!this.getToken();
+    const token = this.getToken();
+    if (!token) {
+      return false;
+    }
+
+    // Check if token is expired
+    try {
+      const decoded: any = jwtDecode(token);
+      const currentTime = Date.now() / 1000;
+      if (decoded.exp < currentTime) {
+        // Token is expired, remove it
+        localStorage.removeItem('token');
+        this.currentUserSubject.next(null);
+        return false;
+      }
+      return true;
+    } catch (error) {
+      // Invalid token
+      localStorage.removeItem('token');
+      this.currentUserSubject.next(null);
+      return false;
+    }
   }
 
   getDecodedToken(): any | null {
@@ -56,5 +77,13 @@ export class AuthService {
 
   getCurrentUser() {
     return this.currentUserSubject.asObservable();
+  }
+
+  forgotPassword(request: { email: string }): Observable<any> {
+    return this.http.post(`${this.apiUrl}/forgot-password`, request, { responseType: 'text' });
+  }
+
+  resetPassword(request: { token: string; newPassword: string; confirmPassword: string }): Observable<any> {
+    return this.http.post(`${this.apiUrl}/reset-password`, request, { responseType: 'text' });
   }
 }

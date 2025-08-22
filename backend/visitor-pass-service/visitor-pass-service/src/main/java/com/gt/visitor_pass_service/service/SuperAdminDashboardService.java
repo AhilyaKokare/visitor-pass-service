@@ -8,6 +8,9 @@ import com.gt.visitor_pass_service.model.Tenant;
 import com.gt.visitor_pass_service.repository.TenantRepository;
 import com.gt.visitor_pass_service.repository.UserRepository;
 import com.gt.visitor_pass_service.repository.VisitorPassRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -74,5 +77,30 @@ public class SuperAdminDashboardService {
                 .stream()
                 .map(visitorPassService::mapToResponse) // Reuse the mapper
                 .collect(Collectors.toList());
+    }
+
+    public Page<TenantActivityDTO> getPaginatedTenantActivity(Pageable pageable) {
+        List<Tenant> allTenants = tenantRepository.findAll();
+
+        // Filter out the "Global Administration" tenant and build activity data
+        List<TenantActivityDTO> tenantActivity = allTenants.stream()
+                .filter(tenant -> !"Global Administration".equals(tenant.getName()))
+                .map(tenant -> TenantActivityDTO.builder()
+                        .tenantId(tenant.getId())
+                        .tenantName(tenant.getName())
+                        .locationDetails(tenant.getLocationDetails())
+                        .userCount(userRepository.countByTenantId(tenant.getId()))
+                        .passesToday(passRepository.countActivePassesForToday()) // Use existing method
+                        .totalPassesAllTime(passRepository.countByTenantId(tenant.getId()))
+                        .build())
+                .collect(Collectors.toList());
+
+        // Manual pagination
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), tenantActivity.size());
+
+        List<TenantActivityDTO> pageContent = tenantActivity.subList(start, end);
+
+        return new PageImpl<>(pageContent, pageable, tenantActivity.size());
     }
 }

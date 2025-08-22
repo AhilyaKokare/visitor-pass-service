@@ -4,7 +4,8 @@
     <div class="card-body">
       <p><strong>Name:</strong> {{ profile.name }}</p>
       <p><strong>Unique ID:</strong> {{ profile.uniqueId }}</p>
-      <p><strong>Department:</strong> {{ profile.department }}</p>
+      <!-- Department field removed for Super Admin and Tenant Admin -->
+      <p *ngIf="!isSuperAdminOrTenantAdmin()"><strong>Department:</strong> {{ profile.department }}</p>
       <hr>
       <form (ngSubmit)="onUpdateProfile()">
         <div class="mb-3">

@@ -32,12 +32,19 @@ export class UserCreateComponent {
   onCreateUser(): void {
     this.isSubmitting = true;
     this.userService.createUser(this.tenantId, this.newUser).subscribe({
-      next: () => {
+      next: (response) => {
+        console.log('User created successfully:', response);
         this.toastr.success('User created successfully!');
-        this.router.navigate(['/tenant-admin/users']);
+        this.isSubmitting = false;
+
+        // Use setTimeout to ensure the success message is shown before navigation
+        setTimeout(() => {
+          this.router.navigate(['/tenant-admin/users']);
+        }, 100);
       },
       error: (err) => {
-        this.toastr.error(err.error.message || 'Failed to create user.');
+        console.error('Error creating user:', err);
+        this.toastr.error(err.error?.message || 'Failed to create user.');
         this.isSubmitting = false;
       }
     });
