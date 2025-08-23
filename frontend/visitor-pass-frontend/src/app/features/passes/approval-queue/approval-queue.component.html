@@ -12,7 +12,7 @@
         <thead>
           <tr>
             <th>Visitor Name</th>
-            <th>Company</th>
+            <th>Purpose of Visit</th> <!-- <-- ADDED THIS HEADER -->
             <th>Requested By</th>
             <th>Visit Date</th>
             <th>Status</th>
@@ -22,7 +22,7 @@
         <tbody>
           <tr *ngFor="let pass of pendingPasses">
             <td>{{ pass.visitorName }}</td>
-            <td>{{ pass.visitorCompany || 'N/A' }}</td>
+            <td>{{ pass.purpose }}</td> <!-- <-- ADDED THIS DATA CELL -->
             <td>{{ pass.createdByEmployeeName }}</td>
             <td>{{ pass.visitDateTime | date:'medium' }}</td>
             <td><span class="badge bg-warning text-dark">{{ pass.status }}</span></td>

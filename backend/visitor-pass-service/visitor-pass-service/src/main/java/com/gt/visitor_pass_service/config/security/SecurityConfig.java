@@ -2,7 +2,7 @@ package com.gt.visitor_pass_service.config.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod; // <-- IMPORT THIS
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -17,14 +17,13 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
+@EnableMethodSecurity(prePostEnabled = true, securedEnabled = true) // Be explicit for clarity
 public class SecurityConfig {
 
     private final JwtAuthenticationEntryPoint unauthorizedHandler;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final InternalApiAuthenticationFilter internalApiAuthenticationFilter;
 
-    // Define the public Swagger paths
     private static final String[] SWAGGER_WHITELIST = {
             "/swagger-ui.html",
             "/swagger-ui/**",
@@ -55,30 +54,30 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // 1. Enable CORS using the global configuration from WebConfig
                 .cors(Customizer.withDefaults())
-
-                // 2. Disable CSRF protection for stateless REST APIs
                 .csrf(csrf -> csrf.disable())
-
-                // 3. Configure exception handling
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
-
-                // 4. Configure session management to be stateless
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
-                // 5. Define authorization rules for your endpoints
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(SWAGGER_WHITELIST).permitAll() // Allow public access to Swagger UI
-                        // IMPORTANT: Allow all OPTIONS pre-flight requests
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        // Your existing rules
+                        // --- PUBLIC ENDPOINTS ---
+                        .requestMatchers(SWAGGER_WHITELIST).permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Allow all CORS pre-flight requests
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/internal/**").hasRole("INTERNAL_SERVICE")
+
+                        // --- INTERNAL SERVICE ENDPOINTS ---
+                        .requestMatchers("/api/internal/**").hasAuthority("ROLE_INTERNAL_SERVICE") // Use hasAuthority for consistency
+
+                        // VVV --- ROLE-BASED ENDPOINTS (THE FIX) --- VVV
+                        .requestMatchers("/api/tenants/{tenantId}/passes/**").hasAnyAuthority("ROLE_EMPLOYEE", "ROLE_TENANT_ADMIN")
+                        .requestMatchers("/api/tenants/{tenantId}/approvals/**").hasAnyAuthority("ROLE_APPROVER", "ROLE_TENANT_ADMIN")
+                        .requestMatchers("/api/tenants/{tenantId}/security/**").hasAnyAuthority("ROLE_SECURITY", "ROLE_TENANT_ADMIN")
+                        .requestMatchers("/api/tenants/{tenantId}/admin/**").hasAuthority("ROLE_TENANT_ADMIN")
+                        .requestMatchers("/api/super-admin/**").hasAuthority("ROLE_SUPER_ADMIN")
+                        
+                        // Any other request must be authenticated (e.g., /api/profile)
                         .anyRequest().authenticated()
                 );
 
-        // 6. Add your custom filters
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(internalApiAuthenticationFilter, JwtAuthenticationFilter.class);
 

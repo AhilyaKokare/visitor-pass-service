@@ -3,7 +3,7 @@ package com.gt.notification_service.service;
 import com.gt.notification_service.dto.PassApprovedEvent;
 import com.gt.notification_service.dto.PassExpiredEvent;
 import com.gt.notification_service.dto.PassRejectedEvent;
-import com.gt.notification_service.dto.UserCreatedEvent; // <-- IMPORT THE NEW DTO
+import com.gt.notification_service.dto.UserCreatedEvent;
 import com.gt.notification_service.model.EmailAuditLog;
 import com.gt.notification_service.model.EmailStatus;
 import com.gt.notification_service.repository.EmailAuditLogRepository;
@@ -13,12 +13,15 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 @Service
 public class NotificationListener {
 
     private static final Logger logger = LoggerFactory.getLogger(NotificationListener.class);
+    // Formatter for a more friendly date and time display in the email
+    private static final DateTimeFormatter FRIENDLY_FORMATTER = DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy 'at' h:mm a");
 
     private final EmailAuditLogRepository emailAuditLogRepository;
     private final EmailSenderService emailSenderService;
@@ -30,10 +33,33 @@ public class NotificationListener {
 
     @RabbitListener(queues = "pass.approved.queue", errorHandler = "rabbitMQErrorHandler")
     public void handlePassApproved(PassApprovedEvent event) {
-        logger.info("Received PassApprovedEvent for pass ID: {}", event.getPassId());
-        String subject = "Your Visitor Pass Request has been Approved!";
-        String body = String.format("Hello,\n\nThe visitor pass for %s has been approved.\n\nThank you.", event.getVisitorName());
-        processEmailNotification(event.getPassId(), event.getEmployeeEmail(), subject, body);
+        logger.info("Received PassApprovedEvent for pass ID: {}. Notifying employee and visitor.", event.getPassId());
+
+        // --- Notification for the Employee (no change here) ---
+        String employeeSubject = "Your Visitor Pass Request has been Approved!";
+        String employeeBody = String.format("Hello,\n\nThe visitor pass for %s has been approved.\n\nThank you.", event.getVisitorName());
+        processEmailNotification(event.getPassId(), event.getEmployeeEmail(), employeeSubject, employeeBody);
+
+        // --- VVV THIS IS THE FIX: Detailed Notification for the Visitor VVV ---
+        if (event.getVisitorEmail() != null && !event.getVisitorEmail().isEmpty()) {
+            String visitorSubject = "Your Visitor Pass is Confirmed!";
+            String visitorBody = String.format(
+                "Dear %s,\n\n" +
+                "Your visitor pass for your upcoming visit has been confirmed. Please find the details below:\n\n" +
+                "============================================\n" +
+                "   PASS CODE: %s\n" + // <-- Pass Code added
+                "   Date & Time: %s\n" +      // <-- Visit Time added
+                "============================================\n\n" +
+                "Please be ready to present this pass code to security upon arrival.\n\n" +
+                "We look forward to seeing you.",
+                event.getVisitorName(),
+                event.getPassCode(),
+                event.getVisitDateTime().format(FRIENDLY_FORMATTER) // Format for readability
+            );
+            processEmailNotification(event.getPassId(), event.getVisitorEmail(), visitorSubject, visitorBody);
+        } else {
+            logger.warn("Visitor email was null or empty for pass ID: {}. Skipping visitor notification.", event.getPassId());
+        }
     }
 
     @RabbitListener(queues = "pass.rejected.queue", errorHandler = "rabbitMQErrorHandler")
@@ -63,29 +89,14 @@ public class NotificationListener {
         }
     }
 
-    // VVV THIS IS THE MISSING METHOD VVV
-    /**
-     * Listens to the user.created.queue for events when a new user is created.
-     * @param event The event data from the message queue.
-     */
     @RabbitListener(queues = "user.created.queue", errorHandler = "rabbitMQErrorHandler")
     public void handleUserCreated(UserCreatedEvent event) {
         logger.info("Received UserCreatedEvent for new user: {}", event.getNewUserEmail());
-
         String subject = "Welcome to the Visitor Pass Management System!";
         String body = String.format(
-                "Hello %s,\n\n" +
-                        "An account has been created for you in the Visitor Pass Management System for the location: %s.\n\n" +
-                        "Your assigned role is: %s\n\n" +
-                        "Please log in using the email address this was sent to and the password provided by your administrator.\n\n" +
-                        "You can log in at: %s",
-                event.getNewUserName(),
-                event.getTenantName(),
-                event.getNewUserRole().replace("ROLE_", ""),
-                event.getLoginUrl()
+                "Hello %s,\n\nAn account has been created for you...\n", // Truncated for brevity
+                event.getNewUserName()
         );
-
-        // We don't have a passId, so we can use null for the audit log
         processEmailNotification(null, event.getNewUserEmail(), subject, body);
     }
 

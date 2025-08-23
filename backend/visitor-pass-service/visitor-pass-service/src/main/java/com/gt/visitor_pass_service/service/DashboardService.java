@@ -5,7 +5,7 @@ import com.gt.visitor_pass_service.dto.TenantDashboardResponse;
 import com.gt.visitor_pass_service.dto.TenantDashboardStats;
 import com.gt.visitor_pass_service.dto.VisitorPassResponse;
 import com.gt.visitor_pass_service.model.AuditLog;
-import com.gt.visitor_pass_service.model.VisitorPass;
+import com.gt.visitor_pass_service.model.enums.PassStatus; // <-- IMPORT THE ENUM
 import com.gt.visitor_pass_service.repository.AuditLogRepository;
 import com.gt.visitor_pass_service.repository.VisitorPassRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,6 +17,7 @@ import com.gt.visitor_pass_service.repository.UserRepository;
 import com.gt.visitor_pass_service.exception.ResourceNotFoundException;
 
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -55,9 +56,11 @@ public class DashboardService {
     }
 
     private TenantDashboardStats getStats(Long tenantId) {
-        long pending = passRepository.countByTenantIdAndStatus(tenantId, "PENDING");
+        // VVV THESE ARE THE FIXES VVV
+        long pending = passRepository.countByTenantIdAndStatus(tenantId, PassStatus.PENDING);
+        long checkedIn = passRepository.countByTenantIdAndStatus(tenantId, PassStatus.CHECKED_IN);
+
         long approvedToday = passRepository.countApprovedForToday(tenantId);
-        long checkedIn = passRepository.countByTenantIdAndStatus(tenantId, "CHECKED_IN");
         long completedToday = passRepository.countCompletedForToday(tenantId);
 
         return TenantDashboardStats.builder()
@@ -80,20 +83,27 @@ public class DashboardService {
     }
 
     private List<EmailAuditLogResponse> getRecentEmailActivity(List<VisitorPassResponse> recentPasses) {
-        if (recentPasses.isEmpty()) {
-            return List.of();
+        if (recentPasses == null || recentPasses.isEmpty()) {
+            return Collections.emptyList();
         }
 
         List<Long> passIds = recentPasses.stream().map(VisitorPassResponse::getId).collect(Collectors.toList());
 
         // Make an API call to the notification-service
-        return webClient.post()
-                .uri("/api/internal/email-logs/by-pass-ids")
-                .bodyValue(passIds)
-                .retrieve()
-                .bodyToFlux(EmailAuditLogResponse.class)
-                .collectList()
-                .block(); // Using block for simplicity; reactive is better for high load
+        try {
+            return webClient.post()
+                    .uri("/api/internal/email-logs/by-pass-ids")
+                    .bodyValue(passIds)
+                    .retrieve()
+                    .bodyToFlux(EmailAuditLogResponse.class)
+                    .collectList()
+                    .block(); // Using block for simplicity; reactive is better for high load
+        } catch (Exception e) {
+            // Log the error and return an empty list to prevent dashboard from failing
+            // In a real app, you would have more robust error handling here
+            System.err.println("Error fetching email activity from notification-service: " + e.getMessage());
+            return Collections.emptyList();
+        }
     }
     public UserDashboardStatsDTO getUserDashboardStats(String userEmail) {
         User user = userRepository.findByEmail(userEmail)

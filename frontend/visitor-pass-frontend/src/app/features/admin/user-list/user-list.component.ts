@@ -1,4 +1,5 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+// 1. IMPORT NgZone and other necessary modules
+import { Component, OnInit, NgZone, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule, TitleCasePipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -17,12 +18,16 @@ import { Page, PaginationComponent } from '../../../shared/pagination/pagination
   templateUrl: './user-list.component.html',
 })
 export class UserListComponent implements OnInit {
+
+  // --- RESTORED @ViewChild ---
   @ViewChild('closeModalButton') closeModalButton!: ElementRef;
 
-  userPage: Page<User> | null = null;
+  users: User[] = [];
+  userPageDetails: Page<any> | null = null;
   tenantId!: number;
   isLoading = true;
   isSubmitting = false;
+<<<<<<< HEAD
   showPassword = false;
 
   currentPage = 0;
@@ -39,12 +44,19 @@ export class UserListComponent implements OnInit {
     contact: '',
     address: ''
   };
+=======
+  currentPage = 0;
+  pageSize = 10;
+  newUser: any = { role: 'ROLE_EMPLOYEE' };
+>>>>>>> 44b2135 (Updated Pagination and notification service)
 
+  // 2. INJECT NgZone
   constructor(
     private userService: UserService,
     private authService: AuthService,
     private toastr: ToastrService,
-    private confirmationService: ConfirmationService
+    private confirmationService: ConfirmationService,
+    private zone: NgZone
   ) {}
 
   ngOnInit(): void {
@@ -59,7 +71,8 @@ export class UserListComponent implements OnInit {
     this.isLoading = true;
     this.userService.getUsers(this.tenantId, this.currentPage, this.pageSize).subscribe({
       next: data => {
-        this.userPage = data;
+        this.users = data.content;
+        this.userPageDetails = data;
         this.isLoading = false;
       },
       error: () => {
@@ -74,6 +87,7 @@ export class UserListComponent implements OnInit {
     this.loadUsers();
   }
 
+  // --- RESTORED onCreateUser METHOD ---
   onCreateUser(): void {
     console.log('Form submission started');
     console.log('Current newUser data:', this.newUser);
@@ -87,12 +101,20 @@ export class UserListComponent implements OnInit {
     this.isSubmitting = true;
 
     this.userService.createUser(this.tenantId, this.newUser).subscribe({
+<<<<<<< HEAD
       next: (response) => {
         console.log('User created successfully:', response);
         this.toastr.success('User created successfully!', 'Success');
         this.loadUsers();
         this.closeModalButton.nativeElement.click();
         this.resetForm();
+=======
+      next: () => {
+        this.toastr.success('User created successfully!');
+        this.loadUsers(); // Reload the list to show the new user
+        this.closeModalButton.nativeElement.click(); // Close the modal
+        this.newUser = { role: 'ROLE_EMPLOYEE' }; // Reset the form
+>>>>>>> 44b2135 (Updated Pagination and notification service)
         this.isSubmitting = false;
       },
       error: (err) => {
@@ -103,6 +125,7 @@ export class UserListComponent implements OnInit {
     });
   }
 
+<<<<<<< HEAD
   private validateForm(): boolean {
     if (!this.newUser.name || !this.newUser.email || !this.newUser.password || !this.newUser.role || !this.newUser.joiningDate) {
       this.toastr.warning('Please fill in all required fields.', 'Validation Error');
@@ -163,8 +186,33 @@ export class UserListComponent implements OnInit {
         next: () => {
           this.toastr.success(`User status updated.`);
           this.loadUsers();
+=======
+  toggleUserStatus(userToToggle: User): void {
+    const action = userToToggle.isActive ? 'Deactivate' : 'Activate';
+    const newStatus = !userToToggle.isActive;
+
+    if (this.confirmationService.confirm(`Are you sure you want to ${action} user "${userToToggle.name}"?`)) {
+      this.userService.updateUserStatus(this.tenantId, userToToggle.id, newStatus).subscribe({
+        next: (updatedUserFromServer) => {
+          
+          // 3. WRAP the UI update logic inside zone.run()
+          this.zone.run(() => {
+            this.toastr.success(`User has been ${action.toLowerCase()}d.`);
+            
+            const index = this.users.findIndex(u => u.id === updatedUserFromServer.id);
+            if (index !== -1) {
+              const newUsers = [...this.users];
+              newUsers[index] = updatedUserFromServer;
+              this.users = newUsers; 
+            } else {
+              this.loadUsers(); // Fallback
+            }
+          });
+>>>>>>> 44b2135 (Updated Pagination and notification service)
         },
-        error: () => this.toastr.error('Failed to update user status.')
+        error: (err) => {
+          this.toastr.error(err?.error?.message || 'Failed to update user status.');
+        }
       });
     }
   }

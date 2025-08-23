@@ -34,7 +34,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let user of userPage?.content">
+         <tr *ngFor="let user of users">
             <td>{{ user.name }}</td>
             <td>{{ user.email }}</td>
             <td>{{ user.role.replace('ROLE_', '') | titlecase }}</td>
@@ -50,13 +50,13 @@
               </button>
             </td>
           </tr>
-          <tr *ngIf="!isLoading && userPage?.empty">
+          <tr *ngIf="!isLoading && userPageDetails?.empty">
             <td colspan="6" class="text-center">No users found for this location. Click "Create New User" to begin.</td>
           </tr>
         </tbody>
       </table>
     </div>
-    <app-pagination [page]="userPage" (pageChange)="onPageChange($event)"></app-pagination>
+    <app-pagination [page]="userPageDetails" (pageChange)="onPageChange($event)"></app-pagination>
   </ng-template>
 </div>
 

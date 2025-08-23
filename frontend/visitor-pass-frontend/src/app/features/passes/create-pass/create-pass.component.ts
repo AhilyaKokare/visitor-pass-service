@@ -1,12 +1,18 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
+
 import { PassService } from '../../../core/services/pass.service';
 import { AuthService } from '../../../core/services/auth.service';
+<<<<<<< HEAD
 import { Router } from '@angular/router';
 import { VisitorPass, EmailNotificationRequest } from '../../../core/models/pass.model';
 import { LoadingSpinnerComponent } from '../../../shared/loading-spinner/loading-spinner.component';
+=======
+import { CreatePassPayload } from '../../../core/models/pass.model';
+>>>>>>> 44b2135 (Updated Pagination and notification service)
 
 @Component({
   selector: 'app-create-pass',
@@ -16,7 +22,15 @@ import { LoadingSpinnerComponent } from '../../../shared/loading-spinner/loading
   styleUrls: ['./create-pass.component.scss']
 })
 export class CreatePassComponent {
-  passData: any = {};
+  // Initialize with the CreatePassPayload interface for type safety
+  passData: CreatePassPayload = {
+    visitorName: '',
+    visitorEmail: '',
+    visitorPhone: '',
+    purpose: '',
+    visitDateTime: ''
+  };
+
   tenantId!: number;
   isSubmitting = false;
   isSendingEmail = false;
@@ -30,29 +44,48 @@ export class CreatePassComponent {
     const user = this.authService.getDecodedToken();
     if (user && user.tenantId) {
       this.tenantId = user.tenantId;
+    } else {
+      this.toastr.error('Could not identify your location. Please log in again.');
     }
   }
 
   onCreatePass(): void {
+<<<<<<< HEAD
     if (!this.passData.visitorEmail) {
       this.toastr.error('Visitor email is required to send pass details.');
       return;
     }
 
+=======
+    if (!this.tenantId) {
+      this.toastr.error('User tenant not found. Cannot create pass.');
+      return;
+    }
+>>>>>>> 44b2135 (Updated Pagination and notification service)
     this.isSubmitting = true;
+
+    // The passData object now correctly matches the required API payload
     this.passService.createPass(this.tenantId, this.passData).subscribe({
       next: (createdPass: VisitorPass) => {
         this.toastr.success('Visitor pass request submitted successfully!');
+<<<<<<< HEAD
 
         // Send email notification to visitor
         this.sendPassCreatedEmail(createdPass);
+=======
+        this.router.navigate(['/passes/my-pass-history']); // Navigate to a more relevant page
+        this.isSubmitting = false;
+>>>>>>> 44b2135 (Updated Pagination and notification service)
       },
       error: (err) => {
-        this.toastr.error(err.error.message || 'Failed to submit pass request.');
+        // More specific error handling
+        const errorMessage = err?.error?.message || 'Failed to submit pass request. Please check the details and try again.';
+        this.toastr.error(errorMessage);
         this.isSubmitting = false;
       }
     });
   }
+<<<<<<< HEAD
 
   private sendPassCreatedEmail(pass: VisitorPass): void {
     this.isSendingEmail = true;
@@ -93,3 +126,6 @@ export class CreatePassComponent {
     });
   }
 }
+=======
+}
+>>>>>>> 44b2135 (Updated Pagination and notification service)

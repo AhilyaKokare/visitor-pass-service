@@ -17,4 +17,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     long countByTenantId(Long tenantId);
 
     Page<User> findByTenantId(Long tenantId, Pageable pageable);
+
+    Optional<User> findFirstByTenantIdAndRole(Long tenantId, String role);
 }
