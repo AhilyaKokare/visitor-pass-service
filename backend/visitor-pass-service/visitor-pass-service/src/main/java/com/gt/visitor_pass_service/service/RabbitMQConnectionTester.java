@@ -25,23 +25,16 @@ public class RabbitMQConnectionTester implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        logger.info("============================================================");
-        logger.info("DIAGNOSTIC V2: Forcing direct declaration of queues...");
-
         if (rabbitAdmin == null) {
-            logger.error("FATAL: RabbitAdmin bean is NULL. Auto-configuration is failing.");
+            logger.error("RabbitAdmin bean is NULL. Auto-configuration is failing.");
             return;
         }
         if (expiredQueue == null) {
-            logger.error("FATAL: expiredQueue bean is NULL. RabbitMQConfig is not being processed correctly.");
+            logger.error("expiredQueue bean is NULL. RabbitMQConfig is not being processed correctly.");
             return;
         }
 
         try {
-            logger.info("Attempting to directly declare queue: '{}'", expiredQueue.getName());
-
-            // This is a direct command: "CREATE THIS QUEUE"
-            // It bypasses the automatic declaration process.
             rabbitAdmin.declareQueue(expiredQueue);
 
             logger.info("SUCCESS: Queue '{}' was declared successfully.", expiredQueue.getName());

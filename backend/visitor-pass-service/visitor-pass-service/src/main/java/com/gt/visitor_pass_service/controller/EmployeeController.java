@@ -79,4 +79,17 @@ public class EmployeeController {
         Page<VisitorPassResponse> passes = visitorPassService.getPassesByTenant(tenantId, pageable);
         return ResponseEntity.ok(passes);
     }
+
+    @GetMapping("/pending")
+    @PreAuthorize("hasAnyRole('APPROVER', 'TENANT_ADMIN')")
+    @Operation(summary = "Get Pending Passes (Paginated)",
+            description = "Retrieves a paginated list of all pending passes within a tenant for approval.")
+    public ResponseEntity<Page<VisitorPassResponse>> getPendingPasses(
+            @Parameter(description = "ID of the tenant") @PathVariable Long tenantId,
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
+            HttpServletRequest servletRequest) {
+        tenantSecurityService.checkTenantAccess(servletRequest.getHeader("Authorization"), tenantId);
+        Page<VisitorPassResponse> passes = visitorPassService.getPendingPassesByTenant(tenantId, pageable);
+        return ResponseEntity.ok(passes);
+    }
 }

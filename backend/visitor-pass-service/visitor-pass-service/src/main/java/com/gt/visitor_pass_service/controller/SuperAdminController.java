@@ -1,9 +1,11 @@
 package com.gt.visitor_pass_service.controller;
 
 import com.gt.visitor_pass_service.dto.CreateTenantAndAdminRequest;
+import com.gt.visitor_pass_service.dto.CreateUserRequest;
 import com.gt.visitor_pass_service.dto.SuperAdminDashboardDTO;
 import com.gt.visitor_pass_service.dto.TenantActivityDTO;
 import com.gt.visitor_pass_service.dto.TenantDashboardInfo;
+import com.gt.visitor_pass_service.dto.UserResponse;
 import com.gt.visitor_pass_service.service.SuperAdminDashboardService;
 import com.gt.visitor_pass_service.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -59,13 +61,6 @@ public class SuperAdminController {
             @Valid @RequestBody CreateTenantAndAdminRequest request,
             Authentication authentication) {
 
-        System.out.println("=== CREATE TENANT ENDPOINT CALLED ===");
-        System.out.println("Authentication: " + authentication);
-        System.out.println("Principal: " + authentication.getPrincipal());
-        System.out.println("Authorities: " + authentication.getAuthorities());
-        System.out.println("Name: " + authentication.getName());
-        System.out.println("Request: " + request);
-
         String creatorName = authentication.getName();
         TenantDashboardInfo response = userService.createTenantAndAdmin(request, creatorName);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
@@ -75,12 +70,6 @@ public class SuperAdminController {
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     @Operation(summary = "Test Authentication", description = "Test endpoint to verify super admin authentication.")
     public ResponseEntity<Map<String, Object>> testAuth(Authentication authentication) {
-        System.out.println("=== TEST AUTH ENDPOINT CALLED ===");
-        System.out.println("Authentication: " + authentication);
-        System.out.println("Principal: " + authentication.getPrincipal());
-        System.out.println("Authorities: " + authentication.getAuthorities());
-        System.out.println("Name: " + authentication.getName());
-
         Map<String, Object> response = new HashMap<>();
         response.put("authenticated", true);
         response.put("principal", authentication.getPrincipal().toString());
@@ -97,6 +86,60 @@ public class SuperAdminController {
             @PageableDefault(size = 10, sort = "tenantName") Pageable pageable) {
         Page<TenantActivityDTO> locations = dashboardService.getPaginatedTenantActivity(pageable);
         return ResponseEntity.ok(locations);
+    }
+
+    @PostMapping("/locations/{tenantId}/admin")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    @Operation(summary = "Create New Location Admin", description = "Creates a new administrator for a location.")
+    public ResponseEntity<Map<String, Object>> createLocationAdmin(
+            @PathVariable Long tenantId,
+            @RequestBody CreateUserRequest request,
+            Authentication authentication) {
+
+        System.out.println("=== CREATE LOCATION ADMIN CONTROLLER ===");
+        System.out.println("Tenant ID: " + tenantId);
+        System.out.println("Request timestamp: " + java.time.LocalDateTime.now());
+
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            // Set the role to TENANT_ADMIN
+            request.setRole("ROLE_TENANT_ADMIN");
+
+            // Create the user
+            UserResponse userResponse = userService.createUser(tenantId, request);
+
+            System.out.println("✅ Location admin created successfully for tenant: " + tenantId);
+
+            response.put("message", "Location administrator created successfully.");
+            response.put("tenantId", tenantId);
+            response.put("user", userResponse);
+            response.put("status", "success");
+            response.put("timestamp", java.time.LocalDateTime.now().toString());
+
+            return ResponseEntity.ok(response);
+
+        } catch (IllegalArgumentException e) {
+            System.err.println("❌ Validation error creating location admin: " + e.getMessage());
+
+            response.put("error", "Validation failed");
+            response.put("tenantId", tenantId);
+            response.put("status", "validation_error");
+            response.put("details", e.getMessage());
+
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+
+        } catch (Exception e) {
+            System.err.println("❌ Error creating location admin: " + e.getMessage());
+            e.printStackTrace();
+
+            response.put("error", "Failed to create location administrator");
+            response.put("tenantId", tenantId);
+            response.put("status", "error");
+            response.put("details", e.getMessage());
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 
     @DeleteMapping("/locations/{tenantId}/admin")

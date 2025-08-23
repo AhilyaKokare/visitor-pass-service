@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, HostListener } from '@angular/core';
 import { TenantService } from '../../../core/services/tenant.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -24,8 +24,10 @@ export class SuperAdminDashboardComponent implements OnInit {
   paginatedLocations: any = { content: [], totalElements: 0, totalPages: 0, number: 0, size: 10, first: true, last: true };
   isLoading = true;
   isSubmitting = false;
+  isLoadingPage = false; // New loading state for pagination
   currentPage = 0;
   pageSize = 10;
+  pageSizeOptions = [5, 10, 20, 50]; // Page size options
 
   // This object will be bound to the form fields in the modal
   newTenantData: any = {};
@@ -128,28 +130,12 @@ export class SuperAdminDashboardComponent implements OnInit {
    * Called when the "Create New Tenant" modal form is submitted.
    */
   onCreateTenant(): void {
-    console.log('=== CREATING TENANT DEBUG ===');
-    console.log('Token exists:', !!localStorage.getItem('token'));
-
-    const token = localStorage.getItem('token');
-    if (token) {
-      try {
-        const decoded = JSON.parse(atob(token.split('.')[1]));
-        console.log('Decoded token:', decoded);
-        console.log('User role:', decoded.role);
-        console.log('Token expiry:', new Date(decoded.exp * 1000));
-        console.log('Current time:', new Date());
-        console.log('Token expired:', decoded.exp < Date.now() / 1000);
-      } catch (e) {
-        console.error('Error decoding token:', e);
-      }
-    }
-
-    console.log('Tenant data to send:', this.newTenantData);
-
     this.isSubmitting = true;
     this.tenantService.createTenantAndAdmin(this.newTenantData).subscribe({
-      next: () => {
+      next: (response) => {
+        console.log('✅ TENANT CREATION SUCCESS:', response);
+        console.log('Created tenant name:', this.newTenantData.tenantName);
+
         this.toastr.success(
           `🎉 Location "${this.newTenantData.tenantName}" created successfully!\n` +
           `📧 Comprehensive welcome email with login credentials sent to ${this.newTenantData.adminEmail}\n` +
@@ -161,14 +147,21 @@ export class SuperAdminDashboardComponent implements OnInit {
             closeButton: true
           }
         );
-        this.loadDashboard(); // Refresh the dashboard data to show the new tenant
+        // Reset pagination to first page to ensure new tenant is visible
+        this.currentPage = 0;
+        console.log('🔄 Refreshing data after tenant creation...');
+
+        // Add a small delay to ensure database transaction is committed
+        setTimeout(() => {
+          this.loadDashboard(); // Refresh the dashboard data to show the new tenant
+          this.loadLocations(); // Refresh the locations list to show the new tenant
+        }, 500);
+
         this.closeModalButton.nativeElement.click(); // Programmatically close the modal
         this.newTenantData = {}; // Reset the form object for the next use
         this.isSubmitting = false;
       },
       error: (err) => {
-        console.error('Tenant creation error:', err);
-
         // Safely extract error message
         let errorMessage = 'Failed to create tenant.';
 
@@ -199,10 +192,26 @@ export class SuperAdminDashboardComponent implements OnInit {
     console.log('Current page:', this.currentPage);
     console.log('Page size:', this.pageSize);
 
+    this.isLoadingPage = true; // Set loading state
+
     this.tenantService.getPaginatedLocations(this.currentPage, this.pageSize).subscribe({
       next: (data) => {
         console.log('Locations loaded successfully:', data);
+        console.log('Number of locations:', data.content?.length || 0);
+        console.log('Total elements:', data.totalElements);
+        console.log('Current page:', data.number);
+        console.log('Total pages:', data.totalPages);
+
+        // Log each location's name for debugging
+        if (data.content && data.content.length > 0) {
+          console.log('Location names:');
+          data.content.forEach((location: any, index: number) => {
+            console.log(`  ${index + 1}. ${location.tenantName} (ID: ${location.tenantId})`);
+          });
+        }
+
         this.paginatedLocations = data;
+        this.isLoadingPage = false; // Clear loading state
       },
       error: (error) => {
         console.error('=== LOAD LOCATIONS FAILED ===');
@@ -222,13 +231,62 @@ export class SuperAdminDashboardComponent implements OnInit {
         }
 
         this.toastr.error(errorMessage);
+        this.isLoadingPage = false; // Clear loading state on error
       }
     });
   }
 
   loadPage(page: number): void {
+    if (page < 0 || page >= this.paginatedLocations.totalPages || page === this.currentPage) {
+      return; // Invalid page or same page
+    }
     this.currentPage = page;
     this.loadLocations();
+  }
+
+  // New method to change page size
+  changePageSize(newSize: number): void {
+    this.pageSize = newSize;
+    this.currentPage = 0; // Reset to first page when changing page size
+    this.loadLocations();
+  }
+
+  // Navigation methods
+  goToFirstPage(): void {
+    this.loadPage(0);
+  }
+
+  goToPreviousPage(): void {
+    this.loadPage(this.currentPage - 1);
+  }
+
+  goToNextPage(): void {
+    this.loadPage(this.currentPage + 1);
+  }
+
+  goToLastPage(): void {
+    this.loadPage(this.paginatedLocations.totalPages - 1);
+  }
+
+  // Utility methods for pagination info
+  getCurrentPageDisplay(): number {
+    return this.paginatedLocations.number + 1;
+  }
+
+  getTotalPages(): number {
+    return this.paginatedLocations.totalPages;
+  }
+
+  getStartIndex(): number {
+    return (this.paginatedLocations.number * this.paginatedLocations.size) + 1;
+  }
+
+  getEndIndex(): number {
+    return Math.min((this.paginatedLocations.number + 1) * this.paginatedLocations.size, this.paginatedLocations.totalElements);
+  }
+
+  getTotalElements(): number {
+    return this.paginatedLocations.totalElements;
   }
 
   getPageNumbers(): number[] {
@@ -236,8 +294,12 @@ export class SuperAdminDashboardComponent implements OnInit {
     const currentPage = this.paginatedLocations.number;
     const pages: number[] = [];
 
-    // Show max 5 page numbers
-    const maxPages = 5;
+    if (totalPages <= 0) {
+      return pages;
+    }
+
+    // Show max 7 page numbers for better navigation
+    const maxPages = 7;
     let startPage = Math.max(0, currentPage - Math.floor(maxPages / 2));
     let endPage = Math.min(totalPages - 1, startPage + maxPages - 1);
 
@@ -246,11 +308,93 @@ export class SuperAdminDashboardComponent implements OnInit {
       startPage = Math.max(0, endPage - maxPages + 1);
     }
 
-    for (let i = startPage; i <= endPage; i++) {
-      pages.push(i);
+    // Add ellipsis logic for large page counts
+    if (totalPages > maxPages) {
+      if (startPage > 0) {
+        pages.push(0); // Always show first page
+        if (startPage > 1) {
+          pages.push(-1); // -1 represents ellipsis
+        }
+      }
+
+      for (let i = startPage; i <= endPage; i++) {
+        if (i !== 0 && i !== totalPages - 1) { // Don't duplicate first/last pages
+          pages.push(i);
+        }
+      }
+
+      if (endPage < totalPages - 1) {
+        if (endPage < totalPages - 2) {
+          pages.push(-1); // -1 represents ellipsis
+        }
+        pages.push(totalPages - 1); // Always show last page
+      }
+    } else {
+      // Show all pages if total is small
+      for (let i = 0; i < totalPages; i++) {
+        pages.push(i);
+      }
     }
 
     return pages;
+  }
+
+  // Check if a page number represents an ellipsis
+  isEllipsis(page: number): boolean {
+    return page === -1;
+  }
+
+  // Keyboard navigation support
+  @HostListener('document:keydown', ['$event'])
+  handleKeyboardNavigation(event: KeyboardEvent): void {
+    // Only handle keyboard navigation when not in input fields
+    if (event.target instanceof HTMLInputElement || event.target instanceof HTMLSelectElement) {
+      return;
+    }
+
+    // Handle pagination keyboard shortcuts
+    if (event.ctrlKey || event.metaKey) {
+      switch (event.key) {
+        case 'ArrowLeft':
+          event.preventDefault();
+          this.goToPreviousPage();
+          break;
+        case 'ArrowRight':
+          event.preventDefault();
+          this.goToNextPage();
+          break;
+        case 'Home':
+          event.preventDefault();
+          this.goToFirstPage();
+          break;
+        case 'End':
+          event.preventDefault();
+          this.goToLastPage();
+          break;
+      }
+    }
+  }
+
+  // Enhanced page validation
+  private isValidPage(page: number): boolean {
+    return page >= 0 && page < this.paginatedLocations.totalPages;
+  }
+
+  // Get pagination summary text
+  getPaginationSummary(): string {
+    if (this.paginatedLocations.totalElements === 0) {
+      return 'No locations found';
+    }
+
+    const start = this.getStartIndex();
+    const end = this.getEndIndex();
+    const total = this.getTotalElements();
+
+    if (start === end) {
+      return `Showing ${start} of ${total} location${total !== 1 ? 's' : ''}`;
+    }
+
+    return `Showing ${start}-${end} of ${total} location${total !== 1 ? 's' : ''}`;
   }
 
   deleteLocationAdmin(tenantId: number, locationName: string): void {
@@ -502,15 +646,11 @@ export class SuperAdminDashboardComponent implements OnInit {
       gender: ''
     };
 
-    console.log('Creating admin for tenant:', this.deletedLocationInfo.tenantId);
-    console.log('Admin data:', adminData);
 
-    // Use the test endpoint that works
-    const createUrl = `${environment.apiUrl}/test/tenants/${this.deletedLocationInfo.tenantId}/users`;
 
-    this.http.post(createUrl, adminData).subscribe({
+    // Use the proper Super Admin endpoint
+    this.tenantService.createLocationAdmin(this.deletedLocationInfo.tenantId, adminData).subscribe({
       next: (response: any) => {
-        console.log('New admin created successfully:', response);
         this.toastr.success(
           `👤 New administrator "${this.newAdminData.name}" created successfully!\n` +
           `🏢 Location: "${this.deletedLocationInfo.locationName}"\n` +
@@ -537,7 +677,16 @@ export class SuperAdminDashboardComponent implements OnInit {
 
         if (error.status === 400) {
           // Handle validation errors including email uniqueness
-          if (error.error && typeof error.error === 'string') {
+          if (error.error?.details) {
+            // Our backend sends detailed error messages in the 'details' field
+            if (error.error.details.includes('already registered')) {
+              errorMessage = 'The email address is already registered with another user account. Please use a different email address.';
+            } else if (error.error.details.includes('contact') || error.error.details.includes('phone')) {
+              errorMessage = 'The contact number is already registered with another user account. Please use a different contact number.';
+            } else {
+              errorMessage = error.error.details;
+            }
+          } else if (error.error && typeof error.error === 'string') {
             errorMessage = error.error;
           } else if (error.error?.message) {
             errorMessage = error.error.message;
@@ -546,6 +695,8 @@ export class SuperAdminDashboardComponent implements OnInit {
           }
         } else if (error.status === 409) {
           errorMessage = 'Email address is already registered. Please use a different email.';
+        } else if (error.status === 500) {
+          errorMessage = 'A server error occurred. Please try again later or contact support.';
         } else if (error.error?.error) {
           errorMessage = error.error.error;
         } else if (error.message) {
@@ -574,8 +725,6 @@ export class SuperAdminDashboardComponent implements OnInit {
   }
 
   proceedWithCreateAdmin(tenantId: number, locationName: string): void {
-    console.log('Proceeding with create admin workaround');
-
     // Store location info for creating new admin
     this.deletedLocationInfo = {
       tenantId: tenantId,
@@ -589,16 +738,12 @@ export class SuperAdminDashboardComponent implements OnInit {
   }
 
   testBackendStatus(): void {
-    console.log('Testing backend status...');
-
     // Test basic connectivity
     this.tenantService.getSuperAdminDashboard().subscribe({
       next: (response) => {
-        console.log('Backend connectivity test SUCCESS:', response);
         this.toastr.success('Backend is running and accessible!');
       },
       error: (error) => {
-        console.error('Backend connectivity test FAILED:', error);
         if (error.status === 0) {
           this.toastr.error('Backend is not running or not accessible!');
         } else {

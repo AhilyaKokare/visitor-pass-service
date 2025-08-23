@@ -29,10 +29,6 @@ public class EmailConfig {
         
         // If no email configuration is provided, create a mock sender for development
         if (username == null || username.trim().isEmpty()) {
-            System.out.println("=== EMAIL CONFIGURATION ===");
-            System.out.println("No email credentials configured. Using mock email sender for development.");
-            System.out.println("To enable real emails, set MAIL_USERNAME and MAIL_PASSWORD environment variables.");
-            
             // Return a mock sender that logs emails instead of sending them
             return new MockJavaMailSender();
         }

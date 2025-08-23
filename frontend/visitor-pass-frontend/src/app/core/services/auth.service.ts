@@ -18,11 +18,22 @@ export class AuthService {
   }
 
   login(credentials: any): Observable<AuthResponse> {
+    console.log('🔐 AuthService.login called with:', {
+      url: `${this.apiUrl}/login`,
+      credentials: { username: credentials.username, password: '***hidden***' }
+    });
+
     return this.http.post<AuthResponse>(`${this.apiUrl}/login`, credentials).pipe(
       tap(response => {
+        console.log('✅ Login response received:', response);
         if (response && response.accessToken) {
+          console.log('💾 Storing token in localStorage');
           localStorage.setItem('token', response.accessToken);
-          this.currentUserSubject.next(this.getDecodedToken());
+          const decodedToken = this.getDecodedToken();
+          console.log('🔓 Decoded token:', decodedToken);
+          this.currentUserSubject.next(decodedToken);
+        } else {
+          console.error('❌ Invalid response format:', response);
         }
       })
     );

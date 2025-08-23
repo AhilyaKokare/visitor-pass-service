@@ -49,16 +49,6 @@ public class UserService { // Renamed from AdminService
 
     @Transactional
     public TenantDashboardInfo createTenantAndAdmin(CreateTenantAndAdminRequest request, String creatorName) {
-        System.out.println("=== CREATE TENANT AND ADMIN REQUEST ===");
-        System.out.println("Tenant Name: " + request.getTenantName());
-        System.out.println("Location Details: " + request.getLocationDetails());
-        System.out.println("Admin Name: " + request.getAdminName());
-        System.out.println("Admin Email: " + request.getAdminEmail());
-        System.out.println("Admin Contact: " + request.getAdminContact());
-        System.out.println("Admin Address: " + request.getAdminAddress());
-        System.out.println("Admin Gender: " + request.getAdminGender());
-        System.out.println("Admin Department: " + request.getAdminDepartment());
-        System.out.println("Creator Name: " + creatorName);
 
         // Validate email uniqueness for the admin
         validateEmailUniqueness(request.getAdminEmail(), null);
@@ -90,34 +80,19 @@ public class UserService { // Renamed from AdminService
         tenantAdmin.setTenant(savedTenant); // Assign to the newly created tenant
         User savedAdmin = userRepository.save(tenantAdmin);
 
-        // Step 2.1: Send comprehensive welcome email to the new tenant admin
-        try {
-            System.out.println("=== SENDING COMPREHENSIVE TENANT CREATION EMAIL ===");
-            System.out.println("Tenant: " + savedTenant.getName());
-            System.out.println("Admin: " + savedAdmin.getName());
-            System.out.println("Email: " + savedAdmin.getEmail());
+        // Step 2.1: Send tenant creation event to RabbitMQ for email processing
+        TenantCreatedEvent event = new TenantCreatedEvent(
+                savedAdmin.getName(),
+                savedAdmin.getEmail(),
+                savedAdmin.getContact(),
+                savedTenant.getName(),
+                savedTenant.getLocationDetails(),
+                request.getAdminPassword(), // Original password (before encoding)
+                creatorName,
+                "http://localhost:4200/login" // Frontend login URL
+        );
 
-            emailService.sendTenantCreationWelcomeEmail(
-                savedAdmin.getEmail(),           // To email
-                savedAdmin.getName(),            // Admin name
-                savedAdmin.getContact(),         // Admin contact
-                savedTenant.getName(),           // Location name
-                savedTenant.getLocationDetails(), // Location address
-                request.getAdminPassword(),      // Original password (before encoding)
-                creatorName                      // Creator name
-            );
-
-            System.out.println("✅ Comprehensive tenant creation email sent successfully!");
-            System.out.println("📧 Email sent to: " + savedAdmin.getEmail());
-            System.out.println("🏢 Location: " + savedTenant.getName());
-
-        } catch (Exception e) {
-            System.err.println("❌ Failed to send tenant creation email to: " + savedAdmin.getEmail());
-            System.err.println("Error type: " + e.getClass().getSimpleName());
-            System.err.println("Error message: " + e.getMessage());
-            e.printStackTrace();
-            // Don't fail the entire operation if email fails - just log the error
-        }
+        rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE_NAME, RabbitMQConfig.ROUTING_KEY_TENANT_CREATED, event);
 
         auditService.logEvent("TENANT_CREATED", null, savedTenant.getId(), null);
         auditService.logEvent("TENANT_ADMIN_CREATED", savedAdmin.getId(), savedTenant.getId(), null);
@@ -160,10 +135,6 @@ public class UserService { // Renamed from AdminService
     }
 
     public UserResponse createUser(Long tenantId, CreateUserRequest request) {
-        System.out.println("=== UserService.createUser called ===");
-        System.out.println("Tenant ID: " + tenantId);
-        System.out.println("Request: " + request);
-
         try {
             // Validate email uniqueness across all users (regardless of role or tenant)
             validateEmailUniqueness(request.getEmail(), null);
@@ -173,7 +144,6 @@ public class UserService { // Renamed from AdminService
 
             Tenant tenant = tenantRepository.findById(tenantId)
                     .orElseThrow(() -> new ResourceNotFoundException("Tenant", "id", tenantId));
-            System.out.println("Tenant found: " + tenant.getName());
 
             User user = new User();
             // Generate a unique ID for the user
@@ -193,9 +163,7 @@ public class UserService { // Renamed from AdminService
             user.setGender(request.getGender());
             user.setDepartment(request.getDepartment());
 
-            System.out.println("About to save user: " + user.getEmail());
             User savedUser = userRepository.save(user);
-            System.out.println("User saved with ID: " + savedUser.getId());
 
             auditService.logEvent("USER_CREATED", savedUser.getId(), tenantId, null);
 
@@ -209,14 +177,9 @@ public class UserService { // Renamed from AdminService
 
             rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE_NAME, RabbitMQConfig.ROUTING_KEY_USER_CREATED, event);
 
-            System.out.println(">>> UserCreatedEvent sent for user: " + savedUser.getEmail());
-
             UserResponse response = mapToUserResponse(savedUser);
-            System.out.println("Returning response: " + response);
             return response;
         } catch (Exception e) {
-            System.err.println("Error in UserService.createUser: " + e.getMessage());
-            e.printStackTrace();
             throw e;
         }
     }

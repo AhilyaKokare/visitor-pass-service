@@ -1,133 +1,107 @@
-<<<<<<< HEAD
-<div class="login-page-wrapper">
-  <div class="login-main-container">
-    <!-- Left Side - Branding & Illustration -->
-    <div class="login-branding-panel">
-      <div class="branding-content">
-        <div class="logo-container">
-          <i class="bi bi-shield-check logo-icon"></i>
-          <h1 class="brand-title">Visitor Pass</h1>
-        </div>
-        <p class="brand-subtitle">Secure & Streamlined Access Management</p>
-        <div class="illustration-container">
-          <img src="assets/security-illustration.svg" alt="Secure Access Illustration" class="login-illustration">
-        </div>
-        <p class="brand-footer">&copy; 2025 Visitor Pass Systems. All rights reserved.</p>
-      </div>
-    </div>
-
-    <!-- Right Side - Login Form -->
-    <div class="login-form-panel">
-      <div class="form-content">
-        <h2 class="form-title">Welcome Back!</h2>
-        <p class="form-subtitle">Please sign in to access your dashboard.</p>
-        <form (ngSubmit)="onLogin()" #loginForm="ngForm" novalidate>
-          <div class="form-group mb-4">
-            <label for="username" class="form-label">Email Address</label>
-            <div class="input-group-modern">
-              <i class="bi bi-envelope input-icon"></i>
-              <input
-                type="email"
-                class="form-control-modern"
-                id="username"
-                name="username"
-                placeholder="you@example.com"
-                [(ngModel)]="credentials.username"
-                #username="ngModel"
-                required
-                email>
-            </div>
-            <div *ngIf="username.invalid && (username.dirty || username.touched)" class="validation-error">
-              <small *ngIf="username.errors?.['required']">Email is required.</small>
-              <small *ngIf="username.errors?.['email']">Please enter a valid email address.</small>
-            </div>
-          </div>
-
-          <div class="form-group mb-4">
-            <label for="password" class="form-label">Password</label>
-             <div class="input-group-modern">
-              <i class="bi bi-lock input-icon"></i>
-              <input
-                type="password"
-                class="form-control-modern"
-                id="password"
-                name="password"
-                placeholder="••••••••"
-                [(ngModel)]="credentials.password"
-                #password="ngModel"
-                required>
-            </div>
-             <div *ngIf="password.invalid && (password.dirty || password.touched)" class="validation-error">
-               <small *ngIf="password.errors?.['required']">Password is required.</small>
-            </div>
-          </div>
-
-          <div class="d-flex justify-content-between align-items-center mb-4">
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" value="" id="rememberMe">
-              <label class="form-check-label" for="rememberMe">
-                Remember me
-              </label>
-            </div>
-            <div class="forgot-password-container">
-              <a routerLink="/forgot-password"
-                 class="forgot-password-link"
-                 (click)="onForgotPassword()"
-                 role="button"
-                 tabindex="0"
-                 title="Reset your password">
-                <i class="bi bi-key me-1"></i>Forgot password?
-              </a>
-            </div>
-          </div>
-
-          <button type="submit" class="btn btn-primary w-100 btn-login" [disabled]="!loginForm.valid || isSubmitting">
-            <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
-            {{ isSubmitting ? 'Signing In...' : 'Sign In' }}
-          </button>
-
-          <div *ngIf="errorMessage" class="alert alert-danger d-flex align-items-center mt-4 p-2">
-             <i class="bi bi-exclamation-triangle-fill me-2"></i>
-             <small>{{ errorMessage }}</small>
-          </div>
-        </form>
-=======
 <div class="login-container">
   <div class="row g-0 h-100">
     <!-- Left Side: Information Panel -->
-    <div class="col-lg-6 d-none d-lg-flex info-panel animate__animated animate__slideInLeft">
-      <div class="info-content text-center text-white">
-        <i class="bi bi-shield-check display-1 mb-4"></i>
-        <h1 class="fw-bold">Visitor Pass Management</h1>
-        <p class="lead mt-3">Secure, efficient, and centralized visitor management for all your locations.</p>
+    <div class="col-lg-6 d-none d-lg-flex modern-info-panel animate__animated animate__slideInLeft">
+      <div class="info-content text-center">
+        <div class="logo-container mb-4">
+          <i class="fas fa-id-card-alt display-1 text-gradient"></i>
+        </div>
+        <h1 class="fw-bold text-white mb-4">Visitor Pass Management</h1>
+        <p class="lead text-white-50 mb-5">Secure, efficient, and centralized visitor management for all your locations.</p>
+
+        <div class="features-list">
+          <div class="feature-item">
+            <i class="fas fa-shield-alt me-3"></i>
+            <span>Secure Access Control</span>
+          </div>
+          <div class="feature-item">
+            <i class="fas fa-clock me-3"></i>
+            <span>Real-time Tracking</span>
+          </div>
+          <div class="feature-item">
+            <i class="fas fa-users me-3"></i>
+            <span>Multi-tenant Support</span>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- Right Side: Login Form Panel -->
-    <div class="col-lg-6 col-md-12 form-panel d-flex align-items-center justify-content-center">
+    <div class="col-lg-6 col-md-12 modern-form-panel d-flex align-items-center justify-content-center">
       <div class="form-content w-100">
-        <div class="card p-4 mx-auto animate__animated animate__fadeInUp">
-          <h3 class="text-center mb-4">Welcome Back</h3>
-          <form (ngSubmit)="onLogin()" #loginForm="ngForm">
-            
-            <!-- VVV THIS IS THE FIX VVV -->
-            <!-- The input is of type="email" but it binds to credentials.username -->
-            <div class="form-floating mb-3 animate__animated animate__fadeInUp" style="animation-delay: 0.1s;">
-              <input type="email" class="form-control" id="email" name="email" placeholder="name@example.com" [(ngModel)]="credentials.username" required email>
-              <label for="email">Email address</label>
-            </div>
+        <div class="modern-login-card animate__animated animate__fadeInUp">
+          <div class="card-header text-center">
+            <h2 class="fw-bold text-gradient mb-2">Welcome Back</h2>
+            <p class="text-muted">Sign in to your account to continue</p>
+          </div>
 
-            <!-- Password Input with Floating Label -->
-            <div class="form-floating mb-3 animate__animated animate__fadeInUp" style="animation-delay: 0.2s;">
-              <input type="password" class="form-control" id="password" name="password" placeholder="Password" [(ngModel)]="credentials.password" required>
-              <label for="password">Password</label>
-            </div>
+          <div class="card-body">
+            <form (ngSubmit)="onLogin()" #loginForm="ngForm">
 
-            <!-- Login Button -->
-            <button type="submit" class="btn btn-primary w-100 btn-lg mt-3 animate__animated animate__fadeInUp" [disabled]="!loginForm.valid || isLoggingIn" style="animation-delay: 0.3s;">
-              <span *ngIf="isLoggingIn" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-              {{ isLoggingIn ? 'Logging In...' : 'Login' }}
-            </button>
+              <!-- Email Input with Modern Styling -->
+              <div class="modern-form-group animate__animated animate__fadeInUp" style="animation-delay: 0.1s;">
+                <label for="email" class="form-label">
+                  <i class="fas fa-envelope me-2"></i>
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  class="form-control modern-input"
+                  id="email"
+                  name="email"
+                  placeholder="Enter your email address"
+                  [(ngModel)]="credentials.username"
+                  required
+                  email
+                  autocomplete="email">
+                <div class="input-focus-border"></div>
+              </div>
+
+              <!-- Password Input with Modern Styling -->
+              <div class="modern-form-group animate__animated animate__fadeInUp" style="animation-delay: 0.2s;">
+                <label for="password" class="form-label">
+                  <i class="fas fa-lock me-2"></i>
+                  Password
+                </label>
+                <div class="password-input-container">
+                  <input
+                    [type]="showPassword ? 'text' : 'password'"
+                    class="form-control modern-input"
+                    id="password"
+                    name="password"
+                    placeholder="Enter your password"
+                    [(ngModel)]="credentials.password"
+                    required
+                    autocomplete="current-password">
+                  <button
+                    type="button"
+                    class="password-toggle-btn"
+                    (click)="togglePasswordVisibility()"
+                    tabindex="-1">
+                    <i [class]="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                  </button>
+                </div>
+                <div class="input-focus-border"></div>
+              </div>
+
+              <!-- Remember Me Checkbox -->
+              <div class="form-check mb-4 animate__animated animate__fadeInUp" style="animation-delay: 0.25s;">
+                <input class="form-check-input" type="checkbox" id="rememberMe" [(ngModel)]="rememberMe" name="rememberMe">
+                <label class="form-check-label" for="rememberMe">
+                  Remember me for 30 days
+                </label>
+              </div>
+
+              <!-- Login Button -->
+              <button
+                type="submit"
+                class="btn btn-primary modern-login-btn w-100 animate__animated animate__fadeInUp"
+                [disabled]="!loginForm.valid || isLoggingIn"
+                style="animation-delay: 0.3s;">
+                <span *ngIf="isLoggingIn" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                <i *ngIf="!isLoggingIn" class="fas fa-sign-in-alt me-2"></i>
+                {{ isLoggingIn ? 'Signing In...' : 'Sign In' }}
+              </button>
 
             <!-- Forgot Password Link -->
             <div class="text-center mt-3 animate__animated animate__fadeInUp" style="animation-delay: 0.4s;">
@@ -137,7 +111,6 @@
             </div>
           </form>
         </div>
->>>>>>> 44b2135 (Updated Pagination and notification service)
       </div>
     </div>
   </div>

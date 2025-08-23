@@ -9,6 +9,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -32,12 +35,13 @@ public class SecurityController {
 
     @GetMapping("/dashboard/today")
     @PreAuthorize("hasAnyRole('SECURITY', 'TENANT_ADMIN')")
-    @Operation(summary = "Get Security Dashboard", description = "Retrieves a list of all visitors who are approved or have already checked in for the current day.")
-    public ResponseEntity<List<SecurityDashboardResponse>> getTodaysVisitors(
+    @Operation(summary = "Get Security Dashboard (Paginated)", description = "Retrieves a paginated list of all visitors who are approved or have already checked in for the current day.")
+    public ResponseEntity<Page<SecurityDashboardResponse>> getTodaysVisitors(
             @Parameter(description = "ID of the tenant") @PathVariable Long tenantId,
+            @PageableDefault(size = 10, sort = "visitDateTime") Pageable pageable,
             HttpServletRequest request) {
         tenantSecurityService.checkTenantAccess(request.getHeader("Authorization"), tenantId);
-        List<SecurityDashboardResponse> visitors = visitorPassService.getTodaysVisitors(tenantId);
+        Page<SecurityDashboardResponse> visitors = visitorPassService.getTodaysVisitorsPaginated(tenantId, pageable);
         return ResponseEntity.ok(visitors);
     }
 

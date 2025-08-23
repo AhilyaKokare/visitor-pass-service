@@ -1,0 +1,231 @@
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { CommonModule, TitleCasePipe } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { ToastrService } from 'ngx-toastr';
+import { UserService } from '../../../core/services/user.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { User } from '../../../core/models/user.model';
+import { LoadingSpinnerComponent } from '../../../shared/loading-spinner/loading-spinner.component';
+import { ConfirmationService } from '../../../core/services/confirmation.service';
+import { Page, PaginationComponent } from '../../../shared/pagination/pagination.component';
+
+@Component({
+  selector: 'app-user-list',
+  standalone: true,
+  imports: [CommonModule, RouterModule, TitleCasePipe, LoadingSpinnerComponent, FormsModule, PaginationComponent],
+  templateUrl: './user-list.component.html',
+})
+export class UserListComponent implements OnInit {
+  @ViewChild('closeModalButton') closeModalButton!: ElementRef;
+
+  // User list properties
+  userPage: Page<User> | null = null;
+  tenantId!: number;
+  isLoading = true;
+  currentPage = 0;
+  pageSize = 10;
+
+  // Create user form properties
+  isSubmitting = false;
+  showPassword = false;
+
+  // Individual form fields (separate variables for better control)
+  userName = '';
+  userEmail = '';
+  userPassword = '';
+  userRole = '';
+  userDepartment = '';
+  userJoiningDate = '';
+  userContact = '';
+  userGender = '';
+  userAddress = '';
+
+  constructor(
+    private userService: UserService,
+    private authService: AuthService,
+    private toastr: ToastrService,
+    private confirmationService: ConfirmationService
+  ) {}
+
+  ngOnInit(): void {
+    const user = this.authService.getDecodedToken();
+    if (user && user.tenantId) {
+      this.tenantId = user.tenantId;
+      this.loadUsers();
+    } else {
+      this.toastr.error('Unable to load user information. Please login again.', 'Authentication Error');
+    }
+  }
+
+  // Load users with pagination
+  loadUsers(): void {
+    this.isLoading = true;
+    this.userService.getUsers(this.tenantId, this.currentPage, this.pageSize).subscribe({
+      next: (response) => {
+        this.userPage = response;
+        this.isLoading = false;
+        console.log('Users loaded:', response);
+      },
+      error: (err) => {
+        console.error('Error loading users:', err);
+        this.toastr.error('Failed to load users');
+        this.isLoading = false;
+      }
+    });
+  }
+
+  // Page change handler
+  onPageChange(pageNumber: number): void {
+    this.currentPage = pageNumber;
+    this.loadUsers();
+  }
+
+  // Statistics methods
+  getActiveUsersCount(): number {
+    return this.userPage?.content?.filter(user => user.isActive).length || 0;
+  }
+
+  getInactiveUsersCount(): number {
+    return this.userPage?.content?.filter(user => !user.isActive).length || 0;
+  }
+
+  // Page size management
+  changePageSize(newSize: number): void {
+    this.pageSize = newSize;
+    this.currentPage = 0; // Reset to first page
+    this.loadUsers();
+  }
+
+  // Role badge styling
+  getRoleBadgeClass(role: string): string {
+    switch (role) {
+      case 'ROLE_TENANT_ADMIN':
+        return 'bg-danger';
+      case 'ROLE_APPROVER':
+        return 'bg-warning text-dark';
+      case 'ROLE_SECURITY':
+        return 'bg-info';
+      case 'ROLE_EMPLOYEE':
+        return 'bg-primary';
+      default:
+        return 'bg-secondary';
+    }
+  }
+
+  // Modal and form methods
+  openCreateUserModal(): void {
+    console.log('Opening create user modal...');
+    // Don't clear form immediately - let user see if inputs work first
+    // this.clearForm();
+  }
+
+  clearForm(): void {
+    this.userName = '';
+    this.userEmail = '';
+    this.userPassword = '';
+    this.userRole = '';
+    this.userDepartment = '';
+    this.userJoiningDate = '';
+    this.userContact = '';
+    this.userGender = '';
+    this.userAddress = '';
+    this.showPassword = false;
+    console.log('Form cleared');
+  }
+
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
+  }
+
+  // Test method to verify form inputs work
+  testFormData(): void {
+    const data = {
+      name: this.userName,
+      email: this.userEmail,
+      role: this.userRole
+    };
+    console.log('Test form data:', data);
+    alert(`Form Test:\nName: ${this.userName || 'Empty'}\nEmail: ${this.userEmail || 'Empty'}\nRole: ${this.userRole || 'Empty'}`);
+  }
+
+  // Submit create user
+  submitCreateUser(): void {
+    console.log('=== SUBMIT CREATE USER ===');
+
+    // Check if user has permission
+    const currentUser = this.authService.getDecodedToken();
+    if (!currentUser || currentUser.role !== 'ROLE_TENANT_ADMIN') {
+      this.toastr.error('You do not have permission to create users.', 'Permission Denied');
+      return;
+    }
+
+    // Validation
+    if (!this.userName || !this.userEmail || !this.userPassword || !this.userRole || !this.userJoiningDate) {
+      this.toastr.warning('Please fill in all required fields: Name, Email, Password, Role, and Joining Date', 'Missing Fields');
+      return;
+    }
+
+    // Create user object with all fields
+    const userData = {
+      name: this.userName,
+      email: this.userEmail,
+      password: this.userPassword,
+      role: this.userRole,
+      department: this.userDepartment,
+      joiningDate: this.userJoiningDate,
+      contact: this.userContact,
+      gender: this.userGender,
+      address: this.userAddress
+    };
+
+    console.log('Submitting user data:', userData);
+    this.isSubmitting = true;
+
+    this.userService.createUser(this.tenantId, userData).subscribe({
+      next: (response) => {
+        console.log('User created successfully:', response);
+        this.toastr.success('User created successfully!', 'Success');
+        this.loadUsers();
+        this.closeModalButton.nativeElement.click();
+        this.clearForm();
+        this.isSubmitting = false;
+      },
+      error: (err) => {
+        console.error('Error creating user:', err);
+        this.isSubmitting = false;
+
+        // Handle different error scenarios
+        if (err.status === 401) {
+          this.toastr.error('Session expired. Please login again.', 'Authentication Error');
+        } else if (err.status === 403) {
+          this.toastr.error('You do not have permission to create users.', 'Permission Denied');
+        } else if (err.status === 400) {
+          this.toastr.error(err.error?.message || 'Invalid user data provided.', 'Validation Error');
+        } else if (err.status === 409) {
+          this.toastr.error('A user with this email already exists.', 'Duplicate User');
+        } else {
+          this.toastr.error(err.error?.message || 'Failed to create user. Please try again.', 'Error');
+        }
+      }
+    });
+  }
+
+  // Toggle user status method
+  toggleUserStatus(user: User): void {
+    const action = user.isActive ? 'deactivate' : 'activate';
+    const confirmed = this.confirmationService.confirm(`Are you sure you want to ${action} ${user.name}?`);
+
+    if (confirmed) {
+      this.userService.updateUserStatus(this.tenantId, user.id, !user.isActive).subscribe({
+        next: () => {
+          this.toastr.success(`User ${action}d successfully!`);
+          this.loadUsers();
+        },
+        error: () => {
+          this.toastr.error(`Failed to ${action} user.`);
+        }
+      });
+    }
+  }
+}

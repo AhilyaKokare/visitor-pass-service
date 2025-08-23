@@ -63,6 +63,7 @@ public class SecurityConfig {
                         .requestMatchers(SWAGGER_WHITELIST).permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Allow all CORS pre-flight requests
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/test/**").permitAll() // Allow test endpoints
 
                         // --- INTERNAL SERVICE ENDPOINTS ---
                         .requestMatchers("/api/internal/**").hasAuthority("ROLE_INTERNAL_SERVICE") // Use hasAuthority for consistency

@@ -82,25 +82,43 @@ public class AuthService {
      * @return A JWT string if authentication is successful.
      */
     public String loginAndGetToken(LoginRequest loginRequest) {
-        // Step 1: Use Spring Security's AuthenticationManager to validate the credentials.
-        // This will automatically use your CustomUserDetailsService to find the user
-        // and BCryptPasswordEncoder to compare the passwords.
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        loginRequest.getUsername(),
-                        loginRequest.getPassword()
-                )
-        );
+        logger.info("=== AuthService.loginAndGetToken called ===");
+        logger.info("Username: {}", loginRequest.getUsername());
+        logger.info("Password provided: {}", loginRequest.getPassword() != null && !loginRequest.getPassword().isEmpty());
 
-        // Step 2: If authentication is successful, set the authentication object in the security context.
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        try {
+            // Step 1: Use Spring Security's AuthenticationManager to validate the credentials.
+            // This will automatically use your CustomUserDetailsService to find the user
+            // and BCryptPasswordEncoder to compare the passwords.
+            logger.info("Attempting authentication...");
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            loginRequest.getUsername(),
+                            loginRequest.getPassword()
+                    )
+            );
+            logger.info("Authentication successful for user: {}", loginRequest.getUsername());
 
-        // Step 3: Fetch the full User object to include its details (like ID, tenantId) in the token.
-        User user = userRepository.findByEmail(loginRequest.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User", "email", loginRequest.getUsername()));
+            // Step 2: If authentication is successful, set the authentication object in the security context.
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        // Step 4: Generate the JWT using the authenticated principal and the full user object.
-        return tokenProvider.generateToken(authentication, user);
+            // Step 3: Fetch the full User object to include its details (like ID, tenantId) in the token.
+            logger.info("Fetching user details from database...");
+            User user = userRepository.findByEmail(loginRequest.getUsername())
+                    .orElseThrow(() -> new ResourceNotFoundException("User", "email", loginRequest.getUsername()));
+
+            logger.info("User found - ID: {}, Role: {}, Active: {}", user.getId(), user.getRole(), user.isActive());
+
+            // Step 4: Generate the JWT using the authenticated principal and the full user object.
+            logger.info("Generating JWT token...");
+            String token = tokenProvider.generateToken(authentication, user);
+            logger.info("JWT token generated successfully. Length: {}", token.length());
+
+            return token;
+        } catch (Exception e) {
+            logger.error("Authentication failed for user: {} - Error: {}", loginRequest.getUsername(), e.getMessage());
+            throw e;
+        }
     }
 
 <<<<<<< HEAD

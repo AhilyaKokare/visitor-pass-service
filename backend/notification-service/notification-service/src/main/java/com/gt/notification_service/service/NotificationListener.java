@@ -4,6 +4,7 @@ import com.gt.notification_service.dto.PassApprovedEvent;
 import com.gt.notification_service.dto.PassExpiredEvent;
 import com.gt.notification_service.dto.PassRejectedEvent;
 import com.gt.notification_service.dto.PasswordResetEvent;
+import com.gt.notification_service.dto.TenantCreatedEvent;
 import com.gt.notification_service.dto.UserCreatedEvent;
 import com.gt.notification_service.model.EmailAuditLog;
 import com.gt.notification_service.model.EmailStatus;
@@ -126,6 +127,39 @@ public class NotificationListener {
         );
 
         processEmailNotification(null, event.getUserEmail(), subject, body);
+    }
+
+    @RabbitListener(queues = "tenant.created.queue", errorHandler = "rabbitMQErrorHandler")
+    public void handleTenantCreated(TenantCreatedEvent event) {
+        logger.info("Received TenantCreatedEvent for new tenant admin: {}", event.getAdminEmail());
+        String subject = "🎉 Welcome to Visitor Pass Management - Your Location & Admin Account Created!";
+        String body = String.format(
+                "Dear %s,\n\n" +
+                "Congratulations! Your Tenant Administrator account has been successfully created for %s.\n\n" +
+                "📋 Account Details:\n" +
+                "Name: %s\n" +
+                "Email: %s\n" +
+                "Role: Tenant Administrator\n" +
+                "Location: %s\n" +
+                "Created By: %s\n\n" +
+                "🔐 Login Credentials:\n" +
+                "Email: %s\n" +
+                "Temporary Password: %s\n\n" +
+                "⚠️ Please change your password after first login for security.\n\n" +
+                "🌐 Login URL: %s\n\n" +
+                "Best regards,\n" +
+                "Visitor Pass Management System Team",
+                event.getAdminName(),
+                event.getTenantName(),
+                event.getAdminName(),
+                event.getAdminEmail(),
+                event.getTenantName(),
+                event.getCreatedBy(),
+                event.getAdminEmail(),
+                event.getAdminPassword(),
+                event.getLoginUrl()
+        );
+        processEmailNotification(null, event.getAdminEmail(), subject, body);
     }
 
     private void processEmailNotification(Long passId, String recipientAddress, String subject, String body) {

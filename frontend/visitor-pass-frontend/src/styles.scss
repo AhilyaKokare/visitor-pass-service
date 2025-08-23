@@ -1,45 +1,21 @@
 /*
 * ... (all your Bootstrap @import and variable overrides remain at the top) ...
 */
-<<<<<<< HEAD
-
-// Import Bootstrap Icons
-@import "bootstrap-icons/font/bootstrap-icons.css";
-
-// Step 1: Define ALL your variable overrides FIRST.
-// This is the most important rule. You must define your custom
-// variables before Bootstrap's default variables are imported.
-
-// Modern Color Palette - Gradient-based theme
-$primary: #667eea; // Modern purple-blue
-$secondary: #764ba2; // Deep purple
-$success: #56ab2f; // Fresh green
-$info: #4facfe; // Bright blue
-$warning: #f093fb; // Pink gradient start
-$danger: #f8485e; // Modern red
-
-// Create a comprehensive custom color map for our theme
-=======
 $primary: #003366;
 $secondary: #6c757d;
 $success: #198754;
->>>>>>> 44b2135 (Updated Pagination and notification service)
 $custom-colors: (
-  "primary-dark": #4c63d2,
-  "primary-light": #a8b5ff,
-  "neon-blue": #00d4ff,
-  "neon-purple": #b537f2,
-  "soft-gray": #f8f9fa,
-  "dark-gray": #2c3e50
+  "primary-dark": #003366,
+  "primary-light": #e6f0ff
 );
 @import "bootstrap/scss/functions";
 @import "bootstrap/scss/variables";
 $theme-colors: map-merge($theme-colors, $custom-colors);
 @import "bootstrap/scss/bootstrap";
 
+
 // --- Your Custom Global Styles Can Go Below ---
 
-<<<<<<< HEAD
 // Import Google Fonts for better typography
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
 
@@ -373,6 +349,32 @@ app-main-layout {
     border: 0;
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08);
   }
+}
+
+/* Enhanced table styles */
+.table {
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  background: white;
+}
+
+.table thead th {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+  color: white;
+  font-weight: 600;
+  border: none;
+  padding: 1rem;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.table tbody td {
+  padding: 1rem;
+  border-color: var(--border-color);
+  vertical-align: middle;
+}
 
   .table-hover tbody tr:hover {
     background-color: rgba($primary, 0.05);
@@ -397,4 +399,3 @@ app-main-layout {
       color: #5a5c69;
   }
 }
->>>>>>> 44b2135 (Updated Pagination and notification service)

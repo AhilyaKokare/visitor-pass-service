@@ -366,15 +366,6 @@ export class UserListComponent implements OnInit {
 =======
 =======
   debugForm(): void {
-    console.log('=== FORM DEBUG INFO ===');
-    console.log('newUser object:', this.newUser);
-    console.log('tenantId:', this.tenantId);
-    console.log('isSubmitting:', this.isSubmitting);
-    console.log('Current token:', localStorage.getItem('token'));
-    console.log('Decoded token:', this.authService.getDecodedToken());
-    console.log('API URL would be:', `${environment.apiUrl}/tenants/${this.tenantId}/admin/users`);
-    console.log('========================');
-
     // Test API connectivity
     this.testApiConnectivity();
 
@@ -546,16 +537,16 @@ Address: ${this.newUser.address || 'EMPTY'}
     if (this.confirmationService.confirm(`Are you sure you want to ${action} user "${userToToggle.name}"?`)) {
       this.userService.updateUserStatus(this.tenantId, userToToggle.id, newStatus).subscribe({
         next: (updatedUserFromServer) => {
-          
+
           // 3. WRAP the UI update logic inside zone.run()
           this.zone.run(() => {
             this.toastr.success(`User has been ${action.toLowerCase()}d.`);
-            
+
             const index = this.users.findIndex(u => u.id === updatedUserFromServer.id);
             if (index !== -1) {
               const newUsers = [...this.users];
               newUsers[index] = updatedUserFromServer;
-              this.users = newUsers; 
+              this.users = newUsers;
             } else {
               this.loadUsers(); // Fallback
             }

@@ -63,14 +63,8 @@ public class TenantAdminController {
     @PreAuthorize("hasRole('TENANT_ADMIN')")
     @Operation(summary = "Create a New User", description = "Creates a new user (Employee, Approver, or Security) within the Tenant Admin's assigned location.")
     public ResponseEntity<UserResponse> createUser(@Parameter(description = "ID of the tenant where user will be created") @PathVariable Long tenantId, @Valid @RequestBody CreateUserRequest request, HttpServletRequest servletRequest) {
-        System.out.println("=== CREATE USER REQUEST ===");
-        System.out.println("Tenant ID: " + tenantId);
-        System.out.println("Request: " + request);
-        System.out.println("Authorization Header: " + servletRequest.getHeader("Authorization"));
-
         try {
             tenantSecurityService.checkTenantAccess(servletRequest.getHeader("Authorization"), tenantId);
-            System.out.println("Tenant access check passed");
 
             // Manual validation
             if (request.getName() == null || request.getName().trim().isEmpty()) {
@@ -87,15 +81,11 @@ public class TenantAdminController {
             }
 
             UserResponse response = userService.createUser(tenantId, request);
-            System.out.println("User created successfully: " + response);
 
             return new ResponseEntity<>(response, HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
-            System.err.println("Validation error creating user: " + e.getMessage());
             return ResponseEntity.badRequest().body(null);
         } catch (Exception e) {
-            System.err.println("Error creating user: " + e.getMessage());
-            e.printStackTrace();
             throw e;
         }
     }

@@ -33,12 +33,6 @@ public class EmailService {
     public void sendTenantAdminWelcomeEmail(String toEmail, String adminName, String locationName,
                                           String password, String createdBy) {
         try {
-            System.out.println("=== SENDING TENANT ADMIN WELCOME EMAIL ===");
-            System.out.println("To: " + toEmail);
-            System.out.println("Admin Name: " + adminName);
-            System.out.println("Location: " + locationName);
-            System.out.println("Created By: " + createdBy);
-
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
@@ -46,22 +40,16 @@ public class EmailService {
             helper.setTo(toEmail);
             helper.setSubject("Welcome to " + appName + " - Tenant Admin Account Created");
 
-            String htmlContent = buildTenantAdminWelcomeEmailContent(adminName, locationName, 
+            String htmlContent = buildTenantAdminWelcomeEmailContent(adminName, locationName,
                                                                    toEmail, password, createdBy);
             helper.setText(htmlContent, true);
 
             mailSender.send(message);
-            System.out.println("Welcome email sent successfully to: " + toEmail);
 
         } catch (MessagingException e) {
-            System.err.println("Failed to send welcome email to: " + toEmail);
-            System.err.println("Error: " + e.getMessage());
-            e.printStackTrace();
             // Don't throw exception to avoid breaking user creation process
         } catch (Exception e) {
-            System.err.println("Unexpected error sending email to: " + toEmail);
-            System.err.println("Error: " + e.getMessage());
-            e.printStackTrace();
+            // Log error but don't break the process
         }
     }
 
@@ -72,14 +60,6 @@ public class EmailService {
                                              String locationName, String locationAddress,
                                              String password, String createdBy) {
         try {
-            System.out.println("=== SENDING COMPREHENSIVE TENANT CREATION EMAIL ===");
-            System.out.println("To: " + toEmail);
-            System.out.println("Admin Name: " + adminName);
-            System.out.println("Admin Contact: " + adminContact);
-            System.out.println("Location: " + locationName);
-            System.out.println("Location Address: " + locationAddress);
-            System.out.println("Created By: " + createdBy);
-
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
@@ -93,16 +73,11 @@ public class EmailService {
             helper.setText(htmlContent, true);
 
             mailSender.send(message);
-            System.out.println("✅ Comprehensive tenant creation email sent successfully to: " + toEmail);
 
         } catch (MessagingException e) {
-            System.err.println("❌ Failed to send tenant creation email to: " + toEmail);
-            System.err.println("Error: " + e.getMessage());
-            e.printStackTrace();
+            // Don't throw exception to avoid breaking tenant creation process
         } catch (Exception e) {
-            System.err.println("❌ Unexpected error sending tenant creation email to: " + toEmail);
-            System.err.println("Error: " + e.getMessage());
-            e.printStackTrace();
+            // Log error but don't break the process
         }
     }
 
@@ -348,12 +323,9 @@ public class EmailService {
             message.setText(content);
             
             mailSender.send(message);
-            System.out.println("Simple email sent successfully to: " + toEmail);
-            
+
         } catch (Exception e) {
-            System.err.println("Failed to send simple email to: " + toEmail);
-            System.err.println("Error: " + e.getMessage());
-            e.printStackTrace();
+            // Log error but don't break the process
         }
     }
 
@@ -382,10 +354,9 @@ public class EmailService {
                 """, userName, appName, resetUrl, appName);
             
             sendSimpleEmail(toEmail, subject, content);
-            
+
         } catch (Exception e) {
-            System.err.println("Failed to send password reset email to: " + toEmail);
-            e.printStackTrace();
+            // Log error but don't break the process
         }
     }
 }

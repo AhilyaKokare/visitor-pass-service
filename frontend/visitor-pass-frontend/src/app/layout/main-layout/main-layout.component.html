@@ -1,4 +1,17 @@
-<app-sidebar></app-sidebar>
-<div id="content" class="page-background">
-  <router-outlet></router-outlet>
+<div class="main-layout">
+  <!-- Mobile Menu Trigger -->
+  <button class="mobile-menu-trigger d-md-none" (click)="toggleSidebar()">
+    <i class="fas fa-bars"></i>
+  </button>
+
+  <!-- Sidebar -->
+  <app-sidebar #sidebar></app-sidebar>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <router-outlet></router-outlet>
+  </div>
+
+  <!-- Mobile Overlay -->
+  <div class="mobile-overlay d-md-none" [class.show]="isSidebarOpen" (click)="closeSidebar()"></div>
 </div>

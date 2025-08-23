@@ -1,81 +1,118 @@
-<div class="container-fluid">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h3 class="mb-0">Super Admin Analytics</h3>
-    <div>
-      <button type="button" class="btn btn-info me-2" (click)="testAuthentication()">
-        <i class="bi bi-shield-check me-1"></i>Test Auth
-      </button>
-      <button type="button" class="btn btn-warning me-2" (click)="testBackendStatus()">
-        <i class="bi bi-server me-1"></i>Test Backend
-      </button>
-      <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createTenantModal">
-        <i class="bi bi-plus-circle me-2"></i>Create New Location
-      </button>
+<div class="container-fluid modern-dashboard fade-in">
+  <!-- Modern Header -->
+  <div class="dashboard-header mb-5">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <h1 class="dashboard-title text-gradient mb-2">
+          <i class="fas fa-chart-line me-3"></i>
+          Super Admin Dashboard
+        </h1>
+        <p class="dashboard-subtitle text-muted mb-0">
+          Manage tenants, monitor system performance, and oversee visitor pass operations
+        </p>
+      </div>
+      <div class="col-md-4 text-md-end">
+        <div class="action-buttons">
+          <button type="button" class="btn btn-outline-info me-2 modern-btn" (click)="testAuthentication()">
+            <i class="fas fa-shield-alt me-2"></i>Test Auth
+          </button>
+          <button type="button" class="btn btn-outline-warning me-2 modern-btn" (click)="testBackendStatus()">
+            <i class="fas fa-server me-2"></i>Test Backend
+          </button>
+          <button type="button" class="btn btn-primary modern-btn pulse" data-bs-toggle="modal" data-bs-target="#createTenantModal">
+            <i class="fas fa-plus-circle me-2"></i>Create New Location
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
   <div *ngIf="!isLoading && dashboardData; else loadingTemplate">
-    
+
     <!-- Global Stats Cards -->
     <div class="row mb-4">
-        <!-- Card 1 -->
+        <!-- Total Tenants Card -->
         <div class="col-lg-3 col-md-6 mb-4">
-          <div class="card border-start border-primary border-4 h-100 py-2">
+          <div class="dashboard-card stats-card-primary slide-in" style="animation-delay: 0.1s;">
             <div class="card-body">
-              <div class="row no-gutters align-items-center">
-                <div class="col me-2">
-                  <div class="text-xs fw-bold text-primary text-uppercase mb-1">Total Tenants</div>
-                  <div class="h5 mb-0 fw-bold text-gray-800">{{ dashboardData.globalStats.totalTenants }}</div>
+              <div class="d-flex align-items-center justify-content-between">
+                <div>
+                  <div class="stats-label">Total Tenants</div>
+                  <div class="stats-value">{{ dashboardData.globalStats.totalTenants }}</div>
+                  <div class="stats-change text-success">
+                    <i class="fas fa-arrow-up me-1"></i>
+                    <small>+12% from last month</small>
+                  </div>
                 </div>
-                <div class="col-auto"><i class="bi bi-building fs-2 text-secondary"></i></div>
+                <div class="stats-icon stats-icon-primary">
+                  <i class="fas fa-building"></i>
+                </div>
               </div>
             </div>
           </div>
         </div>
-        <!-- Card 2 -->
+        <!-- Total Users Card -->
         <div class="col-lg-3 col-md-6 mb-4">
-          <div class="card border-start border-info border-4 h-100 py-2">
+          <div class="dashboard-card stats-card-info slide-in" style="animation-delay: 0.2s;">
             <div class="card-body">
-              <div class="row no-gutters align-items-center">
-                <div class="col me-2">
-                  <div class="text-xs fw-bold text-info text-uppercase mb-1">Total Users</div>
-                  <div class="h5 mb-0 fw-bold text-gray-800">{{ dashboardData.globalStats.totalUsers }}</div>
+              <div class="d-flex align-items-center justify-content-between">
+                <div>
+                  <div class="stats-label">Total Users</div>
+                  <div class="stats-value">{{ dashboardData.globalStats.totalUsers }}</div>
+                  <div class="stats-change text-success">
+                    <i class="fas fa-arrow-up me-1"></i>
+                    <small>+8% from last month</small>
+                  </div>
                 </div>
-                <div class="col-auto"><i class="bi bi-people-fill fs-2 text-secondary"></i></div>
+                <div class="stats-icon stats-icon-info">
+                  <i class="fas fa-users"></i>
+                </div>
               </div>
             </div>
           </div>
         </div>
-        <!-- Card 3 -->
+        <!-- Total Passes Card -->
         <div class="col-lg-3 col-md-6 mb-4">
-          <div class="card border-start border-success border-4 h-100 py-2">
+          <div class="dashboard-card stats-card-success slide-in" style="animation-delay: 0.3s;">
             <div class="card-body">
-              <div class="row no-gutters align-items-center">
-                <div class="col me-2">
-                  <div class="text-xs fw-bold text-success text-uppercase mb-1">Total Passes Issued</div>
-                  <div class="h5 mb-0 fw-bold text-gray-800">{{ dashboardData.globalStats.totalPassesIssued }}</div>
+              <div class="d-flex align-items-center justify-content-between">
+                <div>
+                  <div class="stats-label">Total Passes Issued</div>
+                  <div class="stats-value">{{ dashboardData.globalStats.totalPassesIssued }}</div>
+                  <div class="stats-change text-success">
+                    <i class="fas fa-arrow-up me-1"></i>
+                    <small>+15% from last month</small>
+                  </div>
                 </div>
-                <div class="col-auto"><i class="bi bi-card-checklist fs-2 text-secondary"></i></div>
+                <div class="stats-icon stats-icon-success">
+                  <i class="fas fa-id-card"></i>
+                </div>
               </div>
             </div>
           </div>
         </div>
-        <!-- Card 4 -->
+        <!-- Active Passes Card -->
         <div class="col-lg-3 col-md-6 mb-4">
-          <div class="card border-start border-warning border-4 h-100 py-2">
+          <div class="dashboard-card stats-card-warning slide-in" style="animation-delay: 0.4s;">
             <div class="card-body">
-              <div class="row no-gutters align-items-center">
-                <div class="col me-2">
-                  <div class="text-xs fw-bold text-warning text-uppercase mb-1">Active Passes Today</div>
-                  <div class="h5 mb-0 fw-bold text-gray-800">{{ dashboardData.globalStats.activePassesToday }}</div>
+              <div class="d-flex align-items-center justify-content-between">
+                <div>
+                  <div class="stats-label">Active Passes Today</div>
+                  <div class="stats-value">{{ dashboardData.globalStats.activePassesToday }}</div>
+                  <div class="stats-change text-warning">
+                    <i class="fas fa-clock me-1"></i>
+                    <small>{{ dashboardData.globalStats.activePassesToday }} currently active</small>
+                  </div>
                 </div>
-                <div class="col-auto"><i class="bi bi-calendar-check fs-2 text-secondary"></i></div>
+                <div class="stats-icon stats-icon-warning">
+                  <i class="fas fa-check-circle"></i>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-  
+
     <!-- Location Activity Table -->
     <div class="card shadow">
         <div class="card-header fw-bold">
@@ -95,7 +132,20 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr *ngFor="let location of paginatedLocations.content">
+                        <!-- Loading row -->
+                        <tr *ngIf="isLoadingPage" class="text-center">
+                            <td colspan="6" class="py-4">
+                                <div class="d-flex justify-content-center align-items-center">
+                                    <div class="spinner-border spinner-border-sm text-primary me-2" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <span class="text-muted">Loading locations...</span>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Data rows -->
+                        <tr *ngFor="let location of paginatedLocations.content" [class.opacity-50]="isLoadingPage">
                             <td>{{ location.tenantName }}</td>
                             <td>{{ location.locationDetails }}</td>
                             <td>{{ location.userCount }}</td>
@@ -105,54 +155,123 @@
                                 <button
                                     class="btn btn-danger btn-sm"
                                     (click)="deleteLocationAdmin(location.tenantId, location.tenantName)"
+                                    [disabled]="isSubmitting || isLoadingPage"
                                     title="Delete Location Admin">
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </td>
                         </tr>
-                        <tr *ngIf="paginatedLocations.content.length === 0">
-                            <td colspan="6" class="text-center text-muted">No locations found</td>
+
+                        <!-- Empty state -->
+                        <tr *ngIf="!isLoadingPage && paginatedLocations.content.length === 0" class="text-center">
+                            <td colspan="6" class="py-4">
+                                <div class="text-muted">
+                                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                    <p class="mb-0">No locations found</p>
+                                </div>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
 
-            <!-- Pagination Controls -->
-            <div class="d-flex justify-content-between align-items-center mt-3" *ngIf="paginatedLocations.totalElements > 0">
-                <div class="text-muted">
-                    Showing {{ (paginatedLocations.number * paginatedLocations.size) + 1 }} to
-                    {{ Math.min((paginatedLocations.number + 1) * paginatedLocations.size, paginatedLocations.totalElements) }}
-                    of {{ paginatedLocations.totalElements }} locations
+            <!-- Enhanced Pagination Controls -->
+            <div class="mt-4" *ngIf="paginatedLocations.totalElements > 0">
+                <!-- Page Size Selector and Info -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0 text-muted">Show:</label>
+                        <select class="form-select form-select-sm"
+                                style="width: auto;"
+                                [value]="pageSize"
+                                (change)="changePageSize(+($any($event.target).value))"
+                                [disabled]="isLoadingPage">
+                            <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+                        </select>
+                        <span class="text-muted ms-2">entries per page</span>
+                    </div>
+
+                    <div class="text-muted">
+                        <strong>{{ getStartIndex() }}</strong> to <strong>{{ getEndIndex() }}</strong>
+                        of <strong>{{ getTotalElements() }}</strong> locations
+                    </div>
                 </div>
-                <nav aria-label="Location pagination">
-                    <ul class="pagination pagination-sm mb-0">
-                        <li class="page-item" [class.disabled]="paginatedLocations.first">
-                            <button class="page-link" (click)="loadPage(0)" [disabled]="paginatedLocations.first">
+
+                <!-- Pagination Navigation -->
+                <nav aria-label="Location pagination" class="d-flex justify-content-center">
+                    <ul class="pagination mb-0">
+                        <!-- First Page -->
+                        <li class="page-item" [class.disabled]="paginatedLocations.first || isLoadingPage">
+                            <button class="page-link"
+                                    (click)="goToFirstPage()"
+                                    [disabled]="paginatedLocations.first || isLoadingPage"
+                                    title="First Page">
                                 <i class="bi bi-chevron-double-left"></i>
                             </button>
                         </li>
-                        <li class="page-item" [class.disabled]="paginatedLocations.first">
-                            <button class="page-link" (click)="loadPage(paginatedLocations.number - 1)" [disabled]="paginatedLocations.first">
+
+                        <!-- Previous Page -->
+                        <li class="page-item" [class.disabled]="paginatedLocations.first || isLoadingPage">
+                            <button class="page-link"
+                                    (click)="goToPreviousPage()"
+                                    [disabled]="paginatedLocations.first || isLoadingPage"
+                                    title="Previous Page">
                                 <i class="bi bi-chevron-left"></i>
                             </button>
                         </li>
+
+                        <!-- Page Numbers -->
                         <li class="page-item"
                             *ngFor="let page of getPageNumbers()"
-                            [class.active]="page === paginatedLocations.number">
-                            <button class="page-link" (click)="loadPage(page)">{{ page + 1 }}</button>
+                            [class.active]="page === paginatedLocations.number"
+                            [class.disabled]="isLoadingPage">
+                            <button class="page-link"
+                                    *ngIf="!isEllipsis(page)"
+                                    (click)="loadPage(page)"
+                                    [disabled]="isLoadingPage">
+                                {{ page + 1 }}
+                            </button>
+                            <span class="page-link" *ngIf="isEllipsis(page)">...</span>
                         </li>
-                        <li class="page-item" [class.disabled]="paginatedLocations.last">
-                            <button class="page-link" (click)="loadPage(paginatedLocations.number + 1)" [disabled]="paginatedLocations.last">
+
+                        <!-- Next Page -->
+                        <li class="page-item" [class.disabled]="paginatedLocations.last || isLoadingPage">
+                            <button class="page-link"
+                                    (click)="goToNextPage()"
+                                    [disabled]="paginatedLocations.last || isLoadingPage"
+                                    title="Next Page">
                                 <i class="bi bi-chevron-right"></i>
                             </button>
                         </li>
-                        <li class="page-item" [class.disabled]="paginatedLocations.last">
-                            <button class="page-link" (click)="loadPage(paginatedLocations.totalPages - 1)" [disabled]="paginatedLocations.last">
+
+                        <!-- Last Page -->
+                        <li class="page-item" [class.disabled]="paginatedLocations.last || isLoadingPage">
+                            <button class="page-link"
+                                    (click)="goToLastPage()"
+                                    [disabled]="paginatedLocations.last || isLoadingPage"
+                                    title="Last Page">
                                 <i class="bi bi-chevron-double-right"></i>
                             </button>
                         </li>
                     </ul>
                 </nav>
+
+                <!-- Quick Page Jump (for large datasets) -->
+                <div class="d-flex justify-content-center mt-3" *ngIf="getTotalPages() > 10">
+                    <div class="d-flex align-items-center">
+                        <span class="text-muted me-2">Go to page:</span>
+                        <input type="number"
+                               class="form-control form-control-sm"
+                               style="width: 80px;"
+                               [min]="1"
+                               [max]="getTotalPages()"
+                               [value]="getCurrentPageDisplay()"
+                               (keyup.enter)="loadPage($any($event.target).value - 1)"
+                               [disabled]="isLoadingPage"
+                               placeholder="Page">
+                        <span class="text-muted ms-2">of {{ getTotalPages() }}</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

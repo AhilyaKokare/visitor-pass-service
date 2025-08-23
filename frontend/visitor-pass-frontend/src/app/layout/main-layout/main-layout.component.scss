@@ -1,15 +1,95 @@
-// FILE: frontend/visitor-pass-frontend/src/app/layout/main-layout/main-layout.component.scss
-
-// The special :host selector targets the component's own tag (<app-main-layout>)
+/* Modern Main Layout Styles */
 :host {
-  display: flex;          // 1. Turn the <app-main-layout> itself into a flex container.
-  width: 100%;            // 2. Make it take up the full width of the browser.
-  min-height: 100vh;      // 3. Make it at least as tall as the browser window.
+  display: block;
+  width: 100%;
+  min-height: 100vh;
 }
 
-// Now we style the direct children of the :host
-#content {
-  flex-grow: 1;           // 4. Tell the #content div to grow and fill all remaining space.
-  padding: 2rem;          // 5. Add some consistent padding to the content area.
-  overflow-y: auto;       // 6. Ensure only the content area scrolls if it's too long, not the whole page.
+/* Main Layout Container */
+.main-layout {
+  display: flex;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* Mobile Menu Trigger */
+.mobile-menu-trigger {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 9998;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border: none;
+  border-radius: 12px;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.mobile-menu-trigger:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+}
+
+.mobile-menu-trigger:active {
+  transform: scale(0.95);
+}
+
+/* Main Content */
+.main-content {
+  flex: 1;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  min-height: 100vh;
+  overflow-x: hidden;
+  padding: 2rem;
+}
+
+/* Mobile Overlay */
+.mobile-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 9997;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.mobile-overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Responsive Design */
+@media (max-width: 767.98px) {
+  .main-layout {
+    flex-direction: column;
+  }
+
+  .main-content {
+    padding: 1rem;
+    padding-top: 5rem; /* Account for mobile menu trigger */
+  }
+}
+
+@media (min-width: 768px) {
+  .mobile-menu-trigger {
+    display: none !important;
+  }
+
+  .mobile-overlay {
+    display: none !important;
+  }
 }

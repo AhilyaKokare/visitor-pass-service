@@ -201,6 +201,23 @@ public class VisitorPassService {
                 .collect(Collectors.toList());
     }
 
+    public Page<SecurityDashboardResponse> getTodaysVisitorsPaginated(Long tenantId, Pageable pageable) {
+        Page<VisitorPass> passPage = passRepository.findTodaysVisitorsByTenantPaginated(tenantId, LocalDate.now(), pageable);
+        return passPage.map(pass -> new SecurityDashboardResponse(
+                pass.getId(),
+                pass.getVisitorName(),
+                pass.getPassCode(),
+                pass.getStatus().name(),
+                pass.getVisitDateTime(),
+                pass.getCreatedBy().getName()
+        ));
+    }
+
+    public Page<VisitorPassResponse> getPendingPassesByTenant(Long tenantId, Pageable pageable) {
+        Page<VisitorPass> passPage = passRepository.findByTenantIdAndStatus(tenantId, PassStatus.PENDING, pageable);
+        return passPage.map(this::mapToResponse);
+    }
+
     public VisitorPassResponse mapToResponse(VisitorPass pass) {
         VisitorPassResponse response = new VisitorPassResponse();
         response.setId(pass.getId());

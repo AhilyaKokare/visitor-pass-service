@@ -32,8 +32,15 @@ public interface VisitorPassRepository extends JpaRepository<VisitorPass, Long> 
     @Query("SELECT vp FROM VisitorPass vp WHERE vp.tenant.id = :tenantId AND DATE(vp.visitDateTime) = :date AND (vp.status = com.gt.visitor_pass_service.model.enums.PassStatus.APPROVED OR vp.status = com.gt.visitor_pass_service.model.enums.PassStatus.CHECKED_IN)")
     List<VisitorPass> findTodaysVisitorsByTenant(@Param("tenantId") Long tenantId, @Param("date") LocalDate date);
 
+    // Paginated version for security dashboard
+    @Query("SELECT vp FROM VisitorPass vp WHERE vp.tenant.id = :tenantId AND DATE(vp.visitDateTime) = :date AND (vp.status = com.gt.visitor_pass_service.model.enums.PassStatus.APPROVED OR vp.status = com.gt.visitor_pass_service.model.enums.PassStatus.CHECKED_IN)")
+    Page<VisitorPass> findTodaysVisitorsByTenantPaginated(@Param("tenantId") Long tenantId, @Param("date") LocalDate date, Pageable pageable);
+
     // Corrected to use the enum parameter.
     long countByTenantIdAndStatus(Long tenantId, PassStatus status);
+
+    // Paginated version for pending passes
+    Page<VisitorPass> findByTenantIdAndStatus(Long tenantId, PassStatus status, Pageable pageable);
 
     @Query("SELECT COUNT(vp) FROM VisitorPass vp WHERE vp.tenant.id = :tenantId AND DATE(vp.visitDateTime) = CURRENT_DATE AND vp.status = com.gt.visitor_pass_service.model.enums.PassStatus.APPROVED")
     long countApprovedForToday(@Param("tenantId") Long tenantId);
